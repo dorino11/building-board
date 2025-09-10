@@ -1,0 +1,5 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Redirect…</title>
+<meta http-equiv="refresh" content="0; url=./board.html?display=1">
+<a href="./board.html?display=1">למעבר ללוח לחץ כאן</a>
