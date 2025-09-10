@@ -1,0 +1,121 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.6">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 12.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    span.s1 {font-kerning: none}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
+<p class="p1"><span class="s1">&lt;html lang="he" dir="rtl"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;head&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;title&gt;לוח מודעות דיגיטלי&lt;/title&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;style&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>:root{</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--bg:#0b0f1a;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--card:#121826;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--muted:#97a0b5;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--text:#e8eefc;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--accent:#4da3ff;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--danger:#ff6b6b;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--radius:18px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--news-height:42px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>--news-speed:400s; <span class="Apple-converted-space">  </span>/* איטי יותר */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>html,body{height:100%}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>body{margin:0;background:var(--bg);color:var(--text);font-family:Heebo,Arial,sans-serif;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.wrap{min-height:100%;display:flex;flex-direction:column;max-width:1200px;margin:0 auto;padding:28px;padding-bottom:calc(var(--news-height) + 20px)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>header{display:grid;grid-template-columns:1fr auto;align-items:center;margin-bottom:12px}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.title{font-size:42px;font-weight:800}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.clock{display:flex;flex-direction:column;align-items:flex-end}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.time{font-size:52px;font-weight:800;line-height:1}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.date{font-size:18px;color:var(--muted)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.weather-inline{font-size:16px;color:var(--muted);margin-top:4px}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.shabbat-wide{background:var(--card);border-radius:var(--radius);padding:16px 18px;box-shadow:0 12px 30px rgba(0,0,0,.25);margin:6px 0 12px}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.shab-row{display:flex;gap:22px;flex-wrap:wrap;align-items:baseline}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.shab-title{font-size:22px;margin:0 0 8px 0}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.shab-chip{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.05);padding:10px 14px;border-radius:12px}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.label{color:var(--muted)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.value{font-weight:800}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.board{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);display:flex;flex-direction:column;min-height:0;flex:1}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.msgs-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:10px}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.btn{background:transparent;border:1px solid rgba(255,255,255,.16);color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.msg-board{position:relative;isolation:isolate;border-radius:14px;background:rgba(255,255,255,.03);padding:12px;overflow:auto;min-height:0;flex:1}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.msg-board::before{content:"";position:absolute;inset:-20%;background:radial-gradient(1200px 220px at 10% 20%, rgba(77,163,255,.07), transparent 55%), radial-gradient(800px 200px at 90% 80%, rgba(53,211,153,.06), transparent 60%);filter:blur(10px);z-index:-1;animation:pan 25s linear infinite}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>@keyframes pan{0%{transform:translateX(0)}50%{transform:translateX(-4%)}100%{transform:translateX(0)}}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.msgs{display:grid;gap:12px}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.msg{background:rgba(0,0,0,.18);padding:14px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);animation:fadeUp .5s ease forwards}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.msg .text{font-size:18px;line-height:1.5}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>@keyframes fadeUp{to{opacity:1;transform:none}}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.newsbar{position:fixed;inset-inline:0;bottom:0;height:var(--news-height);background:rgba(0,0,0,.7);color:#fff;z-index:9999;border-top:1px solid rgba(255,255,255,.2)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.news-inner{max-width:1200px;margin:0 auto;height:100%;display:flex;align-items:center;gap:10px;padding:0 16px}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.news-label{font-weight:800}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.news-track{white-space:nowrap;animation:newsMarquee var(--news-speed) linear infinite}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.news-item{display:inline-block;margin:0 28px;font-size:14px}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.news-item a{color:#fff;text-decoration:none}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>@keyframes newsMarquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>body.display .msgs-toolbar{display:none!important}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
+<p class="p1"><span class="s1">&lt;body&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div class="wrap"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;header&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="title" id="boardTitle" contenteditable&gt;לוח מודעות הבניין&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="clock"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="time" id="time"&gt;--:--&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="date" id="date"&gt;טוען…&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="weather-inline" id="weatherInline"&gt;מזג האוויר: —&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/header&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;section class="shabbat-wide"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;h2 class="shab-title"&gt;זמני שבת &lt;small id="shabCity"&gt;&lt;/small&gt;&lt;/h2&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="shab-row"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="shab-chip"&gt;&lt;span class="label"&gt;הדלקת נרות&lt;/span&gt;&lt;span class="value" id="candles"&gt;—&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="shab-chip"&gt;&lt;span class="label"&gt;צאת שבת&lt;/span&gt;&lt;span class="value" id="havdalah"&gt;—&lt;/span&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/section&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;section class="board"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;h2&gt;הודעות לדיירים&lt;/h2&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="msgs-toolbar"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn" id="addMsg"&gt;הוסף הודעה&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn" id="toggleEdit"&gt;מצב עריכה&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;button class="btn" id="clearAll"&gt;נקה הכול&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;div class="msg-board"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>&lt;div class="msgs" id="msgs"&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/section&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div class="newsbar"&gt;&lt;div class="news-inner"&gt;&lt;div class="news-label"&gt;חדשות&lt;/div&gt;&lt;div class="news-track" id="newsTrack"&gt;טוען…&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1">&lt;script&gt;</span></p>
+<p class="p1"><span class="s1">const CONFIG={locationName:'רחובות',latitude:31.8948,longitude:34.8090,tzid:'Asia/Jerusalem',candleOffsetMinutes:18,havdalahOffsetDeg:8.5};</span></p>
+<p class="p1"><span class="s1">function updateClock(){const now=new Date();document.getElementById('time').textContent=now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});document.getElementById('date').textContent=now.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}setInterval(updateClock,1000);updateClock();</span></p>
+<p class="p1"><span class="s1">function wxCodeToHe(c){const m={0:'שמיים בהירים',1:'מעונן חלקית',2:'מעונן',3:'מעונן כבד',45:'ערפל',48:'ערפל קפוא',51:'טפטוף קל',53:'טפטוף',55:'טפטוף חזק',61:'גשם קל',63:'גשם',65:'גשם חזק',71:'שלג קל',73:'שלג',75:'שלג כבד',80:'ממטרים קלים',81:'ממטרים',82:'ממטרים חזקים',95:'סופות רעמים',96:'סופה עם ברד',99:'סופה עם ברד כבד'};return m[c]||'מעודכן'}</span></p>
+<p class="p1"><span class="s1">async function loadWeather(){try{const u=`https://api.open-meteo.com/v1/forecast?latitude=${CONFIG.latitude}&amp;longitude=${CONFIG.longitude}&amp;current=temperature_2m,weather_code&amp;daily=temperature_2m_max,temperature_2m_min&amp;timezone=${encodeURIComponent(CONFIG.tzid)}`;const r=await fetch(u);if(!r.ok) throw 0;const d=await r.json();const t=Math.round(d.current.temperature_2m);const code=d.current.weather_code;const max=Math.round(d.daily.temperature_2m_max[0]);const min=Math.round(d.daily.temperature_2m_min[0]);document.getElementById('weatherInline').textContent=`מזג האוויר: ${t}°C · ${wxCodeToHe(code)} · היום: ${min}°–${max}°`}catch(e){document.getElementById('weatherInline').textContent='מזג האוויר לא זמין'}}</span></p>
+<p class="p1"><span class="s1">loadWeather();setInterval(loadWeather,1800000);</span></p>
+<p class="p1"><span class="s1">const LS_KEYS={title:'board.title',msgs:'board.msgs',edits:'board.edit'};const titleEl=document.getElementById('boardTitle');const msgsEl=document.getElementById('msgs');const addBtn=document.getElementById('addMsg');const toggleBtn=document.getElementById('toggleEdit');(function(){const t=localStorage.getItem(LS_KEYS.title);if(t) titleEl.textContent=t;const arr=JSON.parse(localStorage.getItem(LS_KEYS.msgs)||'[]');arr.forEach(m=&gt;addMsgDOM(m.text))})();let titleSaveTimeout;['input','blur'].forEach(ev=&gt;titleEl.addEventListener(ev,()=&gt;{clearTimeout(titleSaveTimeout);titleSaveTimeout=setTimeout(()=&gt;localStorage.setItem(LS_KEYS.title,titleEl.textContent.trim()),300)}));</span></p>
+<p class="p1"><span class="s1">function addMsgDOM(text){const card=document.createElement('div');card.className='msg';const t=document.createElement('div');t.className='text';t.textContent=text||'טקסט ההודעה…';card.append(t);msgsEl.append(card);card.scrollIntoView({behavior:'smooth',block:'end'})}</span></p>
+<p class="p1"><span class="s1">function saveMsgs(){const arr=[...msgsEl.querySelectorAll('.msg .text')].map(el=&gt;({text:el.textContent.trim()}));localStorage.setItem(LS_KEYS.msgs,JSON.stringify(arr))}</span></p>
+<p class="p1"><span class="s1">function setEdit(v){titleEl.setAttribute('contenteditable',v);msgsEl.querySelectorAll('.msg .text').forEach(el=&gt;el.setAttribute('contenteditable',v));toggleBtn.textContent=v?'צא ממצב עריכה':'מצב עריכה';localStorage.setItem(LS_KEYS.edits,JSON.stringify({edit:v}))}</span></p>
+<p class="p1"><span class="s1">try{const ed=JSON.parse(localStorage.getItem(LS_KEYS.edits)||'{}');if(ed.edit) setEdit(true)}catch{}</span></p>
+<p class="p1"><span class="s1">if(addBtn) addBtn.addEventListener('click',()=&gt;{addMsgDOM();setEdit(true);saveMsgs()});if(toggleBtn) toggleBtn.addEventListener('click',()=&gt;setEdit(toggleBtn.textContent==='מצב עריכה'));document.getElementById('clearAll').addEventListener('click',()=&gt;{if(confirm('למחוק את כל ההודעות?')){msgsEl.innerHTML='';saveMsgs()}});msgsEl.addEventListener('input',saveMsgs);</span></p>
+<p class="p1"><span class="s1">const cityEl=document.getElementById('shabCity');const candlesEl=document.getElementById('candles');const havdalahEl=document.getElementById('havdalah');cityEl.textContent=`– ${CONFIG.locationName}`;async function loadShabbat(){try{const p=new URLSearchParams({cfg:'json',latitude:String(CONFIG.latitude),longitude:String(CONFIG.longitude),tzid:CONFIG.tzid,m:String(CONFIG.havdalahOffsetDeg),b:String(CONFIG.candleOffsetMinutes)});const r=await fetch(`https://www.hebcal.com/shabbat?${p.toString()}`);if(!r.ok) throw 0;const d=await r.json();const now=Date.now();const items=(d.items||[]).filter(i=&gt;['candles','havdalah'].includes(i.category));const nextCandles=items.filter(i=&gt;i.category==='candles').map(x=&gt;({t:new Date(x.date).getTime()})).sort((a,b)=&gt;a.t-b.t).find(x=&gt;x.t&gt;=now);const nextHavdalah=items.filter(i=&gt;i.category==='havdalah').map(x=&gt;({t:new Date(x.date).getTime()})).sort((a,b)=&gt;a.t-b.t).find(x=&gt;x.t&gt;=now);candlesEl.textContent= nextCandles? new Date(nextCandles.t).toLocaleString('he-IL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—';havdalahEl.textContent= nextHavdalah? new Date(nextHavdalah.t).toLocaleString('he-IL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—'}catch(e){candlesEl.textContent='לא זמין';havdalahEl.textContent='לא זמין'}}</span></p>
+<p class="p1"><span class="s1">loadShabbat();setInterval(loadShabbat,21600000);</span></p>
+<p class="p1"><span class="s1">async function fetchRSSJson(u){const api='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(u);const r=await fetch(api);if(!r.ok) throw 0;const d=await r.json();return d.items||[]}</span></p>
+<p class="p1"><span class="s1">async function loadNews(){const s=['https://www.ynet.co.il/Integration/StoryRss2.xml','https://rss.walla.co.il/feed/1?type=main'];let h=[];for(const u of s){try{const i=await fetchRSSJson(u);h=h.concat(i.slice(0,10).map(it=&gt;({t:it.title,u:it.link})))}catch(e){}}const seen=new Set();const dedup=[];for(const x of h){if(!x.t||seen.has(x.t)) continue;seen.add(x.t);dedup.push(x);if(dedup.length&gt;=15) break}const track=document.getElementById('newsTrack');track.innerHTML= dedup.length? (dedup.map(h=&gt;`&lt;span class='news-item'&gt;• &lt;a href='${h.u}' target='_blank'&gt;${h.t}&lt;/a&gt;&lt;/span&gt;`).join('')+dedup.map(h=&gt;`&lt;span class='news-item'&gt;• &lt;a href='${h.u}' target='_blank'&gt;${h.t}&lt;/a&gt;&lt;/span&gt;`).join('')):'אין חדשות'}</span></p>
+<p class="p1"><span class="s1">loadNews();setInterval(loadNews,900000);</span></p>
+<p class="p1"><span class="s1">(function(){const u=new URL(location.href);const disp=u.searchParams.get('display');if(disp==='1'||disp==='true') document.body.classList.add('display')})();</span></p>
+<p class="p1"><span class="s1">(function(){const u=new URL(location.href);const c=u.searchParams.get('city');const lat=parseFloat(u.searchParams.get('lat'));const lng=parseFloat(u.searchParams.get('lng'));if(c) CONFIG.locationName=c;if(!Number.isNaN(lat)&amp;&amp;!Number.isNaN(lng)){CONFIG.latitude=lat;CONFIG.longitude=lng}document.getElementById('shabCity').textContent=`– ${CONFIG.locationName}`})();</span></p>
+<p class="p1"><span class="s1">&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+</body>
+</html>
