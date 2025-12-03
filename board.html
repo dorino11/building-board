@@ -13,63 +13,67 @@
       --accent:#4da3ff;
       --danger:#ff6b6b;
       --radius:18px;
-      --news-height:42px;
-      --news-speed:200s;   /* מהירות גלילה איטית יותר */
+      /* עדכון: הגדלתי את גובה בר החדשות */
+      --news-height:60px;
+      --news-speed:400s;
     }
     html,body{height:100%}
     body{margin:0;background:var(--bg);color:var(--text);font-family:Heebo,Arial,sans-serif;}
-    .wrap{min-height:100%;display:flex;flex-direction:column;max-width:1200px;margin:0 auto;padding:28px;padding-bottom:calc(var(--news-height) + 20px)}
+    .wrap{min-height:100%;display:flex;flex-direction:column;max-width:1200px;margin:0 auto;padding:28px;padding-bottom:calc(var(--news-height) + 20px);box-sizing: border-box;}
     header{display:grid;grid-template-columns:1fr auto;align-items:center;margin-bottom:12px}
     .title{font-size:42px;font-weight:800}
-    .title[contenteditable="true"]{outline:2px dashed rgba(255,255,255,.15);outline-offset:6px}
     .clock{display:flex;flex-direction:column;align-items:flex-end}
     .time{font-size:52px;font-weight:800;line-height:1}
     .date{font-size:18px;color:var(--muted)}
     .weather-inline{font-size:16px;color:var(--muted);margin-top:4px}
-
-    /* בלוק זמני שבת – רוחב מלא */
     .shabbat-wide{background:var(--card);border-radius:var(--radius);padding:16px 18px;box-shadow:0 12px 30px rgba(0,0,0,.25);margin:6px 0 12px}
     .shab-row{display:flex;gap:22px;flex-wrap:wrap;align-items:baseline}
     .shab-title{font-size:22px;margin:0 0 8px 0}
     .shab-chip{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.05);padding:10px 14px;border-radius:12px}
     .label{color:var(--muted)}
     .value{font-weight:800}
-
-    /* אזור הודעות */
-    .board{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);display:flex;flex-direction:column;min-height:0;flex:1}
-    .board h2{margin:0 0 10px 0;font-size:22px}
+    .board{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);display:flex;flex-direction:column;min-height:0;flex:1; overflow: hidden;}
     .msgs-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:10px}
     .btn{background:transparent;border:1px solid rgba(255,255,255,.16);color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}
-    .btn:hover{border-color:rgba(255,255,255,.3)}
-
-    .msg-board{position:relative;isolation:isolate;border-radius:14px;background:rgba(255,255,255,.03);padding:12px;overflow:auto;min-height:0;flex:1}
-    /* רקע עדין */
+    
+    /* עדכון: הסתרת פס הגלילה וטיפול בגלילה */
+    .msg-board{position:relative;isolation:isolate;border-radius:14px;background:rgba(255,255,255,.03);padding:12px;overflow:hidden;min-height:0;flex:1}
     .msg-board::before{content:"";position:absolute;inset:-20%;background:radial-gradient(1200px 220px at 10% 20%, rgba(77,163,255,.07), transparent 55%), radial-gradient(800px 200px at 90% 80%, rgba(53,211,153,.06), transparent 60%);filter:blur(10px);z-index:-1;animation:pan 25s linear infinite}
     @keyframes pan{0%{transform:translateX(0)}50%{transform:translateX(-4%)}100%{transform:translateX(0)}}
-
-    .msgs{display:grid;gap:12px}
-    .msg{background:rgba(0,0,0,.18);padding:14px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);animation:fadeUp .5s ease forwards}
-    .msg .text{font-size:20px;line-height:1.6}  /* גדול יותר במצב עריכה */
+    
+    .msgs{display:grid;gap:16px; padding-bottom: 20px;} /* ריווח גדול יותר בין הודעות */
+    .msg{background:rgba(0,0,0,.18);padding:20px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);animation:fadeUp .5s ease forwards}
+    /* עדכון: הגדלת טקסט ההודעות */
+    .msg .text{font-size:24px;line-height:1.4; font-weight: 500;} 
     @keyframes fadeUp{to{opacity:1;transform:none}}
-
-    /* מצב תצוגה למסך – הסתרת כפתורים + ביטול גלילה פנימית והצגת קרוסלה */
-    body.display .msgs-toolbar{display:none!important}
-    body.display .msg-board{overflow:hidden}
-    body.display .msgs{display:none} /* מסתירים את הרשימה הסטטית */
-    /* מציגים צפייה אחת (קרוסלת הודעות) מעל */
-    .viewer{position:absolute;inset:12px;display:grid;place-items:center;text-align:right}
-    .viewer-item{max-width:100%;opacity:0;transform:translateY(6px);transition:opacity .6s ease, transform .6s ease;font-size:28px;line-height:1.7;background:rgba(0,0,0,.18);padding:22px;border-radius:14px;box-shadow:0 6px 14px rgba(0,0,0,.18)} /* גדול יותר בתצוגה */
-    .viewer-item.active{opacity:1;transform:none}
-
-    /* פס חדשות תחתון (סטיקי) – איטי מאוד */
-    .newsbar{position:fixed;inset-inline:0;bottom:0;height:var(--news-height);background:rgba(0,0,0,.7);color:#fff;z-index:9999;border-top:1px solid rgba(255,255,255,.2)}
-    .news-inner{max-width:1200px;margin:0 auto;height:100%;display:flex;flex-direction:row-reverse;align-items:center;gap:10px;padding:0 16px} /* כותרת מימין */
-    .news-label{font-weight:800}
-    .news-track{white-space:nowrap;animation:newsMarquee var(--news-speed) linear infinite}
-    .news-item{display:inline-block;margin:0 28px;font-size:18px} /* כותרות חדשות גדולות יותר */
+    
+    /* עדכון: עיצוב בר החדשות להצמדה לימין */
+    .newsbar{position:fixed;inset-inline:0;bottom:0;height:var(--news-height);background:rgba(0,0,0,.85);color:#fff;z-index:9999;border-top:1px solid rgba(255,255,255,.2); display: flex;}
+    .news-inner{width: 100%; height:100%;display:flex;align-items:center; padding:0;}
+    
+    /* עדכון: עיצוב התווית "חדשות" */
+    .news-label{
+        font-weight:800; 
+        font-size: 20px;
+        background: var(--accent); /* רקע כחול בולט */
+        height: 100%;
+        display: flex;
+        align-items: center;
+        padding: 0 30px;
+        box-shadow: 4px 0 15px rgba(0,0,0,0.5);
+        z-index: 10;
+        position: relative;
+    }
+    
+    .news-track{white-space:nowrap;animation:newsMarquee var(--news-speed) linear infinite; flex: 1; overflow: hidden; display: flex; align-items: center; height: 100%;}
+    
+    /* עדכון: הגדלת טקסט החדשות */
+    .news-item{display:inline-block;margin:0 40px;font-size:24px; font-weight: 300;}
     .news-item a{color:#fff;text-decoration:none}
-    .news-item a:hover{text-decoration:underline}
-    @keyframes newsMarquee{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+    
+    @keyframes newsMarquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}} /* תיקון לאנימציה חלקה יותר */
+    
+    body.display .msgs-toolbar{display:none!important}
   </style>
 </head>
 <body>
@@ -79,12 +83,9 @@
       <div class="clock">
         <div class="time" id="time">--:--</div>
         <div class="date" id="date">טוען…</div>
-        <!-- מזג אוויר אינליין ללא מסגרת -->
         <div class="weather-inline" id="weatherInline">מזג האוויר: —</div>
       </div>
     </header>
-
-    <!-- זמני שבת – רוחב מלא מתחת לכותרת -->
     <section class="shabbat-wide">
       <h2 class="shab-title">זמני שבת <small id="shabCity"></small></h2>
       <div class="shab-row">
@@ -92,8 +93,6 @@
         <div class="shab-chip"><span class="label">צאת שבת</span><span class="value" id="havdalah">—</span></div>
       </div>
     </section>
-
-    <!-- הודעות לדיירים – עריכה/תצוגה -->
     <section class="board">
       <h2>הודעות לדיירים</h2>
       <div class="msgs-toolbar">
@@ -101,224 +100,76 @@
         <button class="btn" id="toggleEdit">מצב עריכה</button>
         <button class="btn" id="clearAll">נקה הכול</button>
       </div>
-      <div class="msg-board">
+      <div class="msg-board" id="msgBoardContainer">
         <div class="msgs" id="msgs"></div>
-        <!-- שכבת תצוגה למצב display -->
-        <div class="viewer" id="viewer" aria-hidden="true"></div>
       </div>
     </section>
   </div>
-
-  <!-- בר חדשות תחתון (סטיקי, איטי) -->
-  <div class="newsbar" id="newsBar">
-    <div class="news-inner">
-      <div class="news-label">חדשות</div>
-      <div class="news-track" id="newsTrack">טוען כותרות…</div>
-    </div>
+  
+  <div class="newsbar">
+      <div class="news-inner">
+          <div class="news-label">חדשות</div>
+          <div class="news-track" id="newsTrack">טוען…</div>
+      </div>
   </div>
 
 <script>
-/** הגדרות מיקום – ברירת מחדל: רחובות **/
-const CONFIG = {
-  locationName: 'רחובות',
-  latitude: 31.8948,
-  longitude: 34.8090,
-  tzid: 'Asia/Jerusalem',
-  candleOffsetMinutes: 18, // הדלקת נרות לפני שקיעה
-  havdalahOffsetDeg: 8.5   // מעלות לצאת שבת
-};
+const CONFIG={locationName:'רחובות',latitude:31.8948,longitude:34.8090,tzid:'Asia/Jerusalem',candleOffsetMinutes:18,havdalahOffsetDeg:8.5};
+function updateClock(){const now=new Date();document.getElementById('time').textContent=now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});document.getElementById('date').textContent=now.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}setInterval(updateClock,1000);updateClock();
+function wxCodeToHe(c){const m={0:'שמיים בהירים',1:'מעונן חלקית',2:'מעונן',3:'מעונן כבד',45:'ערפל',48:'ערפל קפוא',51:'טפטוף קל',53:'טפטוף',55:'טפטוף חזק',61:'גשם קל',63:'גשם',65:'גשם חזק',71:'שלג קל',73:'שלג',75:'שלג כבד',80:'ממטרים קלים',81:'ממטרים',82:'ממטרים חזקים',95:'סופות רעמים',96:'סופה עם ברד',99:'סופה עם ברד כבד'};return m[c]||'מעודכן'}
+async function loadWeather(){try{const u=`https://api.open-meteo.com/v1/forecast?latitude=${CONFIG.latitude}&longitude=${CONFIG.longitude}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(CONFIG.tzid)}`;const r=await fetch(u);if(!r.ok) throw 0;const d=await r.json();const t=Math.round(d.current.temperature_2m);const code=d.current.weather_code;const max=Math.round(d.daily.temperature_2m_max[0]);const min=Math.round(d.daily.temperature_2m_min[0]);document.getElementById('weatherInline').textContent=`מזג האוויר: ${t}°C · ${wxCodeToHe(code)} · היום: ${min}°–${max}°`}catch(e){document.getElementById('weatherInline').textContent='מזג האוויר לא זמין'}}
+loadWeather();setInterval(loadWeather,1800000);
 
-/** זיהוי מצב תצוגה */
-const urlParams = new URLSearchParams(location.search);
-const IS_DISPLAY = urlParams.get('display')==='1' || urlParams.get('display')==='true';
+const LS_KEYS={title:'board.title',msgs:'board.msgs',edits:'board.edit'};const titleEl=document.getElementById('boardTitle');const msgsEl=document.getElementById('msgs');const addBtn=document.getElementById('addMsg');const toggleBtn=document.getElementById('toggleEdit');(function(){const t=localStorage.getItem(LS_KEYS.title);if(t) titleEl.textContent=t;const arr=JSON.parse(localStorage.getItem(LS_KEYS.msgs)||'[]');arr.forEach(m=>addMsgDOM(m.text))})();let titleSaveTimeout;['input','blur'].forEach(ev=>titleEl.addEventListener(ev,()=>{clearTimeout(titleSaveTimeout);titleSaveTimeout=setTimeout(()=>localStorage.setItem(LS_KEYS.title,titleEl.textContent.trim()),300)}));
+function addMsgDOM(text){const card=document.createElement('div');card.className='msg';const t=document.createElement('div');t.className='text';t.textContent=text||'טקסט ההודעה…';card.append(t);msgsEl.append(card);/*card.scrollIntoView({behavior:'smooth',block:'end'}) - removed for auto scroll*/}
+function saveMsgs(){const arr=[...msgsEl.querySelectorAll('.msg .text')].map(el=>({text:el.textContent.trim()}));localStorage.setItem(LS_KEYS.msgs,JSON.stringify(arr))}
+function setEdit(v){titleEl.setAttribute('contenteditable',v);msgsEl.querySelectorAll('.msg .text').forEach(el=>el.setAttribute('contenteditable',v));toggleBtn.textContent=v?'צא ממצב עריכה':'מצב עריכה';localStorage.setItem(LS_KEYS.edits,JSON.stringify({edit:v}))}
+try{const ed=JSON.parse(localStorage.getItem(LS_KEYS.edits)||'{}');if(ed.edit) setEdit(true)}catch{}
+if(addBtn) addBtn.addEventListener('click',()=>{addMsgDOM();setEdit(true);saveMsgs()});if(toggleBtn) toggleBtn.addEventListener('click',()=>setEdit(toggleBtn.textContent==='מצב עריכה'));document.getElementById('clearAll').addEventListener('click',()=>{if(confirm('למחוק את כל ההודעות?')){msgsEl.innerHTML='';saveMsgs()}});msgsEl.addEventListener('input',saveMsgs);
 
-/** שעון ותאריך בעברית **/
-function updateClock(){
-  const now=new Date();
-  document.getElementById('time').textContent=now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('date').textContent=now.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-}
-setInterval(updateClock,1000);updateClock();
+const cityEl=document.getElementById('shabCity');const candlesEl=document.getElementById('candles');const havdalahEl=document.getElementById('havdalah');cityEl.textContent=`– ${CONFIG.locationName}`;async function loadShabbat(){try{const p=new URLSearchParams({cfg:'json',latitude:String(CONFIG.latitude),longitude:String(CONFIG.longitude),tzid:CONFIG.tzid,m:String(CONFIG.havdalahOffsetDeg),b:String(CONFIG.candleOffsetMinutes)});const r=await fetch(`https://www.hebcal.com/shabbat?${p.toString()}`);if(!r.ok) throw 0;const d=await r.json();const now=Date.now();const items=(d.items||[]).filter(i=>['candles','havdalah'].includes(i.category));const nextCandles=items.filter(i=>i.category==='candles').map(x=>({t:new Date(x.date).getTime()})).sort((a,b)=>a.t-b.t).find(x=>x.t>=now);const nextHavdalah=items.filter(i=>i.category==='havdalah').map(x=>({t:new Date(x.date).getTime()})).sort((a,b)=>a.t-b.t).find(x=>x.t>=now);candlesEl.textContent= nextCandles? new Date(nextCandles.t).toLocaleString('he-IL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—';havdalahEl.textContent= nextHavdalah? new Date(nextHavdalah.t).toLocaleString('he-IL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—'}catch(e){candlesEl.textContent='לא זמין';havdalahEl.textContent='לא זמין'}}
+loadShabbat();setInterval(loadShabbat,21600000);
 
-/** מזג אוויר אינליין (Open-Meteo) **/
-function wxCodeToHe(code){
-  const map={0:'שמיים בהירים',1:'מעונן חלקית',2:'מעונן',3:'מעונן כבד',45:'ערפל',48:'ערפל קפוא',51:'טפטוף קל',53:'טפטוף',55:'טפטוף חזק',61:'גשם קל',63:'גשם',65:'גשם חזק',71:'שלג קל',73:'שלג',75:'שלג כבד',80:'ממטרים קלים',81:'ממטרים',82:'ממטרים חזקים',95:'סופות רעמים',96:'סופה עם ברד',99:'סופה עם ברד כבד'};
-  return map[code]||'מעודכן';
-}
-async function loadWeather(){
-  try{
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${CONFIG.latitude}&longitude=${CONFIG.longitude}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(CONFIG.tzid)}`;
-    const res = await fetch(url,{cache:'no-store'});
-    if(!res.ok) throw new Error(res.status);
-    const d = await res.json();
-    const t = Math.round(d.current.temperature_2m);
-    const code = d.current.weather_code;
-    const max = d.daily ? Math.round(d.daily.temperature_2m_max[0]) : null;
-    const min = d.daily ? Math.round(d.daily.temperature_2m_min[0]) : null;
-    document.getElementById('weatherInline').textContent = `מזג האוויר: ${t}°C · ${wxCodeToHe(code)}${(min!=null&&max!=null?` · היום: ${min}°–${max}°`:``)}`;
-  }catch(e){
-    document.getElementById('weatherInline').textContent='מזג האוויר: לא זמין';
-  }
-}
-loadWeather();setInterval(loadWeather,30*60*1000);
+async function fetchRSSJson(u){const api='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(u);const r=await fetch(api);if(!r.ok) throw 0;const d=await r.json();return d.items||[]}
+async function loadNews(){const s=['https://www.ynet.co.il/Integration/StoryRss2.xml','https://rss.walla.co.il/feed/1?type=main'];let h=[];for(const u of s){try{const i=await fetchRSSJson(u);h=h.concat(i.slice(0,10).map(it=>({t:it.title,u:it.link})))}catch(e){}}const seen=new Set();const dedup=[];for(const x of h){if(!x.t||seen.has(x.t)) continue;seen.add(x.t);dedup.push(x);if(dedup.length>=15) break}const track=document.getElementById('newsTrack');
+// שכפול החדשות כדי ליצור אפקט גלילה רציף (Marquee) חלק יותר
+const newsHtml = dedup.length? dedup.map(h=>`<span class='news-item'>• ${h.t}</span>`).join('') : 'אין חדשות';
+track.innerHTML= newsHtml + newsHtml;}
+loadNews();setInterval(loadNews,900000);
 
-/** הודעות – שמירה מקומית + תצוגה */
-const LS_KEYS={ title:'board.title', msgs:'board.msgs', edits:'board.edit' };
-const titleEl=document.getElementById('boardTitle');
-const msgsEl=document.getElementById('msgs');
-const addBtn=document.getElementById('addMsg');
-const toggleBtn=document.getElementById('toggleEdit');
-const viewer=document.getElementById('viewer');
+(function(){const u=new URL(location.href);const disp=u.searchParams.get('display');if(disp==='1'||disp==='true') document.body.classList.add('display')})();
+(function(){const u=new URL(location.href);const c=u.searchParams.get('city');const lat=parseFloat(u.searchParams.get('lat'));const lng=parseFloat(u.searchParams.get('lng'));if(c) CONFIG.locationName=c;if(!Number.isNaN(lat)&&!Number.isNaN(lng)){CONFIG.latitude=lat;CONFIG.longitude=lng}document.getElementById('shabCity').textContent=`– ${CONFIG.locationName}`})();
 
-// טען נתונים
-(function init(){
-  const t=localStorage.getItem(LS_KEYS.title); if(t) titleEl.textContent=t;
-  const arr=JSON.parse(localStorage.getItem(LS_KEYS.msgs)||'[]');
-  arr.forEach(m=>addMsgDOM(m.text));
-  setupDisplayMode();
-  startCarousel(); // אם צריך
-})();
+// --- מנגנון גלילה אוטומטית להודעות ---
+function startMessageScroller() {
+    const board = document.getElementById('msgBoardContainer');
+    let scrollSpeed = 1; // מהירות הגלילה (גבוה יותר = מהיר יותר)
+    let isPaused = false;
 
-// שמירת כותרת
-let titleSaveTimeout;['input','blur'].forEach(ev=>titleEl.addEventListener(ev,()=>{
-  clearTimeout(titleSaveTimeout);
-  titleSaveTimeout=setTimeout(()=>localStorage.setItem(LS_KEYS.title,titleEl.textContent.trim()),300);
-}));
+    setInterval(() => {
+        // בודק אם יש צורך בגלילה (התוכן גדול מהקופסה)
+        if (board.scrollHeight > board.clientHeight) {
+            
+            // אם המשתמש במצב עריכה - אל תגלול
+            if(document.getElementById('toggleEdit').textContent === 'צא ממצב עריכה') return;
 
-/** יצירת הודעה חדשה – בלי placeholder בכלל */
-function addMsgDOM(text){
-  const card=document.createElement('div');card.className='msg';
-  const t=document.createElement('div');t.className='text';t.textContent=(text||''); // אין טקסט ברירת מחדל
-  card.append(t);msgsEl.append(card);
-  if(!IS_DISPLAY) card.scrollIntoView({behavior:'smooth',block:'end'});
-}
-function saveMsgs(){
-  const arr=[...msgsEl.querySelectorAll('.msg .text')].map(el=>({text:el.textContent.trim()}));
-  localStorage.setItem(LS_KEYS.msgs,JSON.stringify(arr));
-  // עדכן את הקרוסלה כשיש שינוי
-  buildCarousel();
-}
-function setEdit(v){
-  titleEl.setAttribute('contenteditable',v);
-  msgsEl.querySelectorAll('.msg .text').forEach(el=>el.setAttribute('contenteditable',v));
-  if(toggleBtn) toggleBtn.textContent = v ? 'צא ממצב עריכה' : 'מצב עריכה';
-  localStorage.setItem(LS_KEYS.edits,JSON.stringify({edit:v}));
-}
-// שחזור מצב עריכה
-try{const ed=JSON.parse(localStorage.getItem(LS_KEYS.edits)||'{}');if(ed.edit) setEdit(true);}catch{}
+            if(!isPaused) {
+                board.scrollTop += scrollSpeed;
+            }
 
-// אירועים
-if(addBtn) addBtn.addEventListener('click',()=>{ addMsgDOM(''); setEdit(true); saveMsgs(); });
-if(toggleBtn) toggleBtn.addEventListener('click',()=> setEdit(toggleBtn.textContent==='מצב עריכה'));
-const clearBtn=document.getElementById('clearAll');
-if(clearBtn) clearBtn.addEventListener('click',()=>{ if(confirm('למחוק את כל ההודעות?')){ msgsEl.innerHTML=''; saveMsgs(); }});
-msgsEl.addEventListener('input',saveMsgs);
+            // אם הגענו לתחתית
+            if (Math.ceil(board.scrollTop + board.clientHeight) >= board.scrollHeight) {
+                isPaused = true;
+                setTimeout(() => {
+                    board.scrollTop = 0; // חזרה למעלה
+                    isPaused = false;
+                }, 3000); // מחכה 3 שניות למטה לפני שחוזר למעלה
+            }
+        }
+    }, 50); // רץ כל 50 מילישניות
+}
+startMessageScroller();
 
-/** מצב תצוגה למסך */
-function setupDisplayMode(){
-  if(IS_DISPLAY){ document.body.classList.add('display'); }
-}
-
-/** קרוסלת הודעות למצב תצוגה – מתחלפות אחת אחת עם fade */
-let carouselTimer=null;
-let carouselIndex=0;
-function getMessagesArray(){
-  return [...msgsEl.querySelectorAll('.msg .text')].map(el=>el.textContent.trim()).filter(Boolean);
-}
-function buildCarousel(){
-  if(!IS_DISPLAY) return;
-  const items=getMessagesArray();
-  viewer.innerHTML='';
-  if(items.length===0){
-    const empty=document.createElement('div');
-    empty.className='viewer-item active';
-    empty.textContent='';
-    viewer.appendChild(empty);
-    return;
-  }
-  for(const t of items){
-    const el=document.createElement('div');
-    el.className='viewer-item';
-    el.textContent=t;
-    viewer.appendChild(el);
-  }
-  carouselIndex=0;
-  activateCarouselItem(0);
-}
-function activateCarouselItem(i){
-  const all=[...viewer.querySelectorAll('.viewer-item')];
-  all.forEach((el,idx)=>el.classList.toggle('active', idx===i));
-}
-function startCarousel(){
-  if(!IS_DISPLAY) return;
-  buildCarousel();
-  if(carouselTimer) clearInterval(carouselTimer);
-  carouselTimer=setInterval(()=>{
-    const len=viewer.querySelectorAll('.viewer-item').length;
-    if(len<=1) return;
-    carouselIndex=(carouselIndex+1)%len;
-    activateCarouselItem(carouselIndex);
-  }, 10000); // כל 10 שניות מחליף הודעה
-}
-
-/** זמני שבת – Hebcal **/
-const cityEl=document.getElementById('shabCity');
-const candlesEl=document.getElementById('candles');
-const havdalahEl=document.getElementById('havdalah');
-cityEl.textContent = `– ${CONFIG.locationName}`;
-async function loadShabbat(){
-  try{
-    const params=new URLSearchParams({cfg:'json',latitude:String(CONFIG.latitude),longitude:String(CONFIG.longitude),tzid:CONFIG.tzid,m:String(CONFIG.havdalahOffsetDeg),b:String(CONFIG.candleOffsetMinutes)});
-    const res=await fetch(`https://www.hebcal.com/shabbat?${params.toString()}`,{cache:'no-store'});
-    if(!res.ok) throw new Error(res.status);
-    const data=await res.json();
-    const now=Date.now();
-    const items=(data.items||[]).filter(i=>['candles','havdalah'].includes(i.category));
-    const nextCandles=items.filter(i=>i.category==='candles').map(x=>({t:new Date(x.date).getTime()})).sort((a,b)=>a.t-b.t).find(x=>x.t>=now);
-    const nextHavdalah=items.filter(i=>i.category==='havdalah').map(x=>({t:new Date(x.date).getTime()})).sort((a,b)=>a.t-b.t).find(x=>x.t>=now);
-    candlesEl.textContent= nextCandles ? new Date(nextCandles.t).toLocaleString('he-IL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—';
-    havdalahEl.textContent= nextHavdalah ? new Date(nextHavdalah.t).toLocaleString('he-IL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—';
-  }catch(e){
-    candlesEl.textContent='לא זמין';
-    havdalahEl.textContent='לא זמין';
-  }
-}
-loadShabbat(); setInterval(loadShabbat, 6*60*60*1000);
-
-/** חדשות – Ynet & Walla (RSS דרך rss2json) – גלילה איטית מאוד **/
-async function fetchRSSJson(rssUrl){
-  const api='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rssUrl);
-  const r=await fetch(api,{cache:'no-store'});
-  if(!r.ok) throw new Error(r.status);
-  const d=await r.json();
-  return d.items||[];
-}
-async function loadNews(){
-  const sources=['https://www.ynet.co.il/Integration/StoryRss2.xml','https://rss.walla.co.il/feed/1?type=main'];
-  let headlines=[];
-  for(const s of sources){ try{ const items=await fetchRSSJson(s); headlines=headlines.concat(items.slice(0,10).map(it=>({t:it.title,u:it.link}))); }catch(e){} }
-  const seen=new Set(); const dedup=[];
-  for(const h of headlines){ if(!h.t || seen.has(h.t)) continue; seen.add(h.t); dedup.push(h); if(dedup.length>=15) break; }
-  const track=document.getElementById('newsTrack');
-  track.innerHTML= dedup.length ? (dedup.map(h=>`<span class='news-item'>• <a href='${h.u}' target='_blank' rel='noopener'>${h.t.replace(/\"/g,'&quot;')}</a></span>`).join('') + dedup.map(h=>`<span class='news-item'>• <a href='${h.u}' target='_blank' rel='noopener'>${h.t.replace(/\"/g,'&quot;')}</a></span>`).join('')) : 'לא נמצאו כותרות';
-}
-loadNews(); setInterval(loadNews, 15*60*1000);
-
-/** מצב תצוגה למסך – הוסף ?display=1 ל-URL */
-(function setupBodyClass(){
-  if(IS_DISPLAY) document.body.classList.add('display');
-})();
-
-/** פרמטרים ל-URL – שינוי מיקום ללא קוד: ?city=ירושלים&lat=31.7683&lng=35.2137 */
-(function readURL(){
-  const u=new URL(location.href);
-  const city=u.searchParams.get('city');
-  const lat=parseFloat(u.searchParams.get('lat'));
-  const lng=parseFloat(u.searchParams.get('lng'));
-  if(city) CONFIG.locationName=city;
-  if(!Number.isNaN(lat) && !Number.isNaN(lng)){ CONFIG.latitude=lat; CONFIG.longitude=lng; }
-  document.getElementById('shabCity').textContent=`– ${CONFIG.locationName}`;
-})();
 </script>
 </body>
 </html>
