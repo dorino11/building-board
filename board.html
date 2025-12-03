@@ -13,8 +13,7 @@
       --accent:#4da3ff;
       --danger:#ff6b6b;
       --radius:18px;
-      --news-height:46px;
-      --news-speed:120s;   /* מהירות גלילת חדשות – קטן = מהר יותר */
+      --news-height:52px;
     }
 
     html,body{height:100%}
@@ -145,7 +144,7 @@
       border-radius:14px;
       background:rgba(255,255,255,.03);
       padding:12px;
-      overflow:visible;  /* ללא גלילה פנימית במצב עריכה */
+      overflow:visible;  /* בלי גלילה פנימית */
       min-height:0;
       flex:1;
     }
@@ -189,7 +188,7 @@
 
     /* ===== DISPLAY MODE – קרוסלה ===== */
     body.display .msgs-toolbar{display:none!important}
-    body.display .msg-board{overflow:hidden}  /* במצב תצוגה כן חותך ומראה רק קרוסלה */
+    body.display .msg-board{overflow:hidden}
     body.display .msgs{display:none}
 
     .viewer{
@@ -216,7 +215,7 @@
       transform:none;
     }
 
-    /* ===== NEWS BAR ===== */
+    /* ===== NEWS BAR – כותרת אחת בכל פעם ===== */
     .newsbar{
       position:fixed;
       inset-inline:0;
@@ -231,7 +230,7 @@
       width:100%;
       height:100%;
       display:flex;
-      flex-direction:row-reverse; /* הכותרת בצד ימין */
+      flex-direction:row-reverse;
       align-items:center;
       padding-inline:16px;
       box-sizing:border-box;
@@ -249,33 +248,28 @@
     .news-track{
       flex:1;
       overflow:hidden;
-      white-space:nowrap;
       display:flex;
       align-items:center;
-      animation:newsMarquee var(--news-speed) linear infinite;
+      justify-content:flex-start;
     }
     .news-item{
-      display:inline-block;
-      margin:0 28px;
       font-size:16px;
+      white-space:nowrap;
     }
     .news-item a{
       color:#fff;
       text-decoration:none;
     }
     .news-item a:hover{text-decoration:underline}
-    @keyframes newsMarquee{
-      0%{transform:translateX(100%)}
-      100%{transform:translateX(-100%)}
-    }
 
-    /* קטן למסכים צרים */
     @media (max-width:768px){
       .wrap{padding:16px;padding-bottom:calc(var(--news-height) + 16px)}
       header{grid-template-columns:1fr}
       .title{text-align:center}
       .clock{align-items:center}
       .viewer-item{font-size:22px}
+      .news-label{font-size:16px;padding:4px 18px}
+      .news-item{font-size:14px}
     }
   </style>
 </head>
@@ -592,13 +586,42 @@ async function loadShabbat(){
 loadShabbat();
 setInterval(loadShabbat,6*60*60*1000);
 
-/* ===== חדשות – RSS דרך rss2json ===== */
+/* ===== חדשות – RSS דרך rss2json, כותרת אחת בכל פעם ===== */
+let newsHeadlines = [];
+let newsIndex = 0;
+let newsTimer = null;
+
 async function fetchRSSJson(rssUrl){
   const api = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rssUrl);
   const res = await fetch(api,{cache:'no-store'});
   if(!res.ok) throw 0;
   const data = await res.json();
   return data.items || [];
+}
+
+function renderNews(){
+  const track = document.getElementById('newsTrack');
+  if(!newsHeadlines.length){
+    track.textContent = 'אין חדשות להצגה';
+    return;
+  }
+  const h = newsHeadlines[newsIndex];
+  track.innerHTML =
+    `<span class="news-item">• <a href="${h.u}" target="_blank" rel="noopener">${h.t.replace(/"/g,'&quot;')}</a></span>`;
+}
+
+function startNewsTicker(){
+  const track = document.getElementById('newsTrack');
+  if(!newsHeadlines.length){
+    track.textContent = 'אין חדשות להצגה';
+    return;
+  }
+  if(newsTimer) clearInterval(newsTimer);
+  renderNews();
+  newsTimer = setInterval(() => {
+    newsIndex = (newsIndex + 1) % newsHeadlines.length;
+    renderNews();
+  }, 8000); // כל 8 שניות כותרת חדשה
 }
 
 async function loadNews(){
@@ -609,46 +632,29 @@ async function loadNews(){
 
   let headlines = [];
 
-  // לוקחים הרבה יותר כותרות מכל מקור
   for(const src of sources){
     try{
       const items = await fetchRSSJson(src);
-      // עד 40 מכל מקור
       headlines = headlines.concat(
         items.slice(0,40).map(it => ({t:it.title,u:it.link}))
       );
     }catch(e){}
   }
 
-  // דה־דופליקציה – עד 40 כותרות ייחודיות
   const seen = new Set();
   const dedup = [];
   for(const h of headlines){
     if(!h.t || seen.has(h.t)) continue;
     seen.add(h.t);
     dedup.push(h);
-    if(dedup.length >= 40) break;   // עד 40 כותרות שונות
+    if(dedup.length >= 40) break;
   }
 
-  const track = document.getElementById('newsTrack');
-  if(!dedup.length){
-    track.textContent = 'אין חדשות להצגה';
-    return;
-  }
-
-  // בונים שורה אחת של כותרות
-  const row = dedup.map(h =>
-    `<span class="news-item">• <a href="${h.u}" target="_blank" rel="noopener">${h.t.replace(/"/g,'&quot;')}</a></span>`
-  ).join(' ');
-
-  // משכפלים מספר פעמים כדי שהמרקיזה תרגיש אינסופית
-  const repeatTimes = 4; // אפשר להעלות ל־6 אם תרצה יותר צפוף/ארוך
-  let html = '';
-  for(let i=0;i<repeatTimes;i++){
-    html += row + ' ';
-  }
-  track.innerHTML = html;
+  newsHeadlines = dedup;
+  newsIndex = 0;
+  startNewsTicker();
 }
+
 loadNews();
 setInterval(loadNews,15*60*1000);
 </script>
