@@ -14,8 +14,6 @@
       --danger:#ff6b6b;
       --radius:18px;
       --news-height:60px;
-      
-      /* עודכן לפי בקשתך */
       --news-speed:20s; 
     }
     html,body{height:100%}
@@ -33,26 +31,27 @@
     .shab-chip{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.05);padding:10px 14px;border-radius:12px}
     .label{color:var(--muted)}
     .value{font-weight:800}
+    
+    /* עדכון: הסתרת גלילה במיכל ההודעות */
     .board{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 12px 30px rgba(0,0,0,.25);display:flex;flex-direction:column;min-height:0;flex:1; overflow: hidden;}
+    
     .msgs-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:10px}
     .btn{background:transparent;border:1px solid rgba(255,255,255,.16);color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}
     
-    /* הסתרת פס הגלילה וטיפול בגלילה */
     .msg-board{position:relative;isolation:isolate;border-radius:14px;background:rgba(255,255,255,.03);padding:12px;overflow:hidden;min-height:0;flex:1}
     .msg-board::before{content:"";position:absolute;inset:-20%;background:radial-gradient(1200px 220px at 10% 20%, rgba(77,163,255,.07), transparent 55%), radial-gradient(800px 200px at 90% 80%, rgba(53,211,153,.06), transparent 60%);filter:blur(10px);z-index:-1;animation:pan 25s linear infinite}
     @keyframes pan{0%{transform:translateX(0)}50%{transform:translateX(-4%)}100%{transform:translateX(0)}}
     
-    .msgs{display:grid;gap:16px; padding-bottom: 20px;}
-    .msg{background:rgba(0,0,0,.18);padding:20px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);animation:fadeUp .5s ease forwards}
-    /* פונט מוגדל להודעות */
+    /* עדכון: שינוי תצוגה כדי לתמוך בהחלפת הודעות */
+    .msgs{display:flex; flex-direction: column; gap:16px; padding-bottom: 20px; transition: transform 0.5s ease;}
+    
+    .msg{background:rgba(0,0,0,.18);padding:20px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);animation:fadeUp .5s ease forwards; flex-shrink: 0;}
     .msg .text{font-size:24px;line-height:1.4; font-weight: 500;} 
     @keyframes fadeUp{to{opacity:1;transform:none}}
     
-    /* בר חדשות */
     .newsbar{position:fixed;inset-inline:0;bottom:0;height:var(--news-height);background:rgba(0,0,0,.85);color:#fff;z-index:9999;border-top:1px solid rgba(255,255,255,.2); display: flex;}
     .news-inner{width: 100%; height:100%;display:flex;align-items:center; padding:0;}
     
-    /* כותרת חדשות דבוקה לימין */
     .news-label{
         font-weight:800; 
         font-size: 20px;
@@ -130,26 +129,44 @@ if(addBtn) addBtn.addEventListener('click',()=>{addMsgDOM();setEdit(true);saveMs
 const cityEl=document.getElementById('shabCity');const candlesEl=document.getElementById('candles');const havdalahEl=document.getElementById('havdalah');cityEl.textContent=`– ${CONFIG.locationName}`;async function loadShabbat(){try{const p=new URLSearchParams({cfg:'json',latitude:String(CONFIG.latitude),longitude:String(CONFIG.longitude),tzid:CONFIG.tzid,m:String(CONFIG.havdalahOffsetDeg),b:String(CONFIG.candleOffsetMinutes)});const r=await fetch(`https://www.hebcal.com/shabbat?${p.toString()}`);if(!r.ok) throw 0;const d=await r.json();const now=Date.now();const items=(d.items||[]).filter(i=>['candles','havdalah'].includes(i.category));const nextCandles=items.filter(i=>i.category==='candles').map(x=>({t:new Date(x.date).getTime()})).sort((a,b)=>a.t-b.t).find(x=>x.t>=now);const nextHavdalah=items.filter(i=>i.category==='havdalah').map(x=>({t:new Date(x.date).getTime()})).sort((a,b)=>a.t-b.t).find(x=>x.t>=now);candlesEl.textContent= nextCandles? new Date(nextCandles.t).toLocaleString('he-IL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—';havdalahEl.textContent= nextHavdalah? new Date(nextHavdalah.t).toLocaleString('he-IL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—'}catch(e){candlesEl.textContent='לא זמין';havdalahEl.textContent='לא זמין'}}
 loadShabbat();setInterval(loadShabbat,21600000);
 
-async function fetchRSSJson(u){const api='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(u);const r=await fetch(api);if(!r.ok) throw 0;const d=await r.json();return d.items||[]}
+// --- קוד חדשות מעודכן עם יותר מקורות ---
+async function fetchRSSJson(u){
+    // הוספת פרמטר זמן כדי למנוע שמירה בזיכרון ולקבל חדשות טריות
+    const noCacheUrl = u + (u.includes('?') ? '&' : '?') + 't=' + Date.now();
+    const api='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(noCacheUrl);
+    const r=await fetch(api);
+    if(!r.ok) throw 0;
+    const d=await r.json();
+    return d.items||[]
+}
+
 async function loadNews(){
-  const s=['https://www.ynet.co.il/Integration/StoryRss2.xml','https://rss.walla.co.il/feed/1?type=main'];
+  // הוספתי את N12 ואת ישראל היום לרשימה
+  const s=[
+      'https://www.ynet.co.il/Integration/StoryRss2.xml',
+      'https://rss.walla.co.il/feed/1?type=main',
+      'https://rccs.mako.co.il/rss/31750a2610f26110VgnVCM1000005201000aRCRD.xml', // N12
+      'https://www.israelhayom.co.il/rss.xml' // Israel Hayom
+  ];
+  
   let h=[];
   for(const u of s){
     try{
       const i=await fetchRSSJson(u);
-      // הסרתי את ה-slice כדי לקחת את כל החדשות מהפיד ולא רק 10
       h=h.concat(i.map(it=>({t:it.title,u:it.link})));
     }catch(e){}
   }
+  
   const seen=new Set();
   const dedup=[];
   for(const x of h){
     if(!x.t||seen.has(x.t)) continue;
     seen.add(x.t);
     dedup.push(x);
-    // הגדלתי את המגבלה מ-15 ל-50 כותרות
-    if(dedup.length>=50) break;
+    // הגדלתי משמעותית את כמות החדשות
+    if(dedup.length>=100) break;
   }
+  
   const track=document.getElementById('newsTrack');
   const newsHtml = dedup.length? dedup.map(h=>`<span class='news-item'>• ${h.t}</span>`).join('') : 'אין חדשות';
   track.innerHTML= newsHtml + newsHtml;
@@ -159,30 +176,30 @@ loadNews();setInterval(loadNews,900000);
 (function(){const u=new URL(location.href);const disp=u.searchParams.get('display');if(disp==='1'||disp==='true') document.body.classList.add('display')})();
 (function(){const u=new URL(location.href);const c=u.searchParams.get('city');const lat=parseFloat(u.searchParams.get('lat'));const lng=parseFloat(u.searchParams.get('lng'));if(c) CONFIG.locationName=c;if(!Number.isNaN(lat)&&!Number.isNaN(lng)){CONFIG.latitude=lat;CONFIG.longitude=lng}document.getElementById('shabCity').textContent=`– ${CONFIG.locationName}`})();
 
-// --- גלילה אוטומטית להודעות ---
-function startMessageScroller() {
-    const board = document.getElementById('msgBoardContainer');
-    let scrollSpeed = 1; 
-    let isPaused = false;
-
+// --- קרוסלת הודעות חכמה (לפי דרישה) ---
+function startMessageCarousel() {
     setInterval(() => {
-        if (board.scrollHeight > board.clientHeight) {
-            if(document.getElementById('toggleEdit').textContent === 'צא ממצב עריכה') return;
+        // בדיקה: האם המשתמש במצב עריכה? אם כן, עוצרים.
+        if(document.getElementById('toggleEdit').textContent === 'צא ממצב עריכה') return;
+
+        const msgsContainer = document.getElementById('msgs');
+        const msgs = msgsContainer.children;
+
+        // הדרישה: רק אם יש יותר מ-6 הודעות
+        if (msgs.length > 6) {
+            // לוקחים את ההודעה הראשונה
+            const firstMsg = msgs[0];
             
-            if(!isPaused) {
-                board.scrollTop += scrollSpeed;
-            }
-            if (Math.ceil(board.scrollTop + board.clientHeight) >= board.scrollHeight) {
-                isPaused = true;
-                setTimeout(() => {
-                    board.scrollTop = 0; 
-                    isPaused = false;
-                }, 3000); 
-            }
+            // מעבירים אותה לסוף הרשימה (זה קורה מיידית ב-DOM)
+            msgsContainer.appendChild(firstMsg);
+            
+            // אפשר להוסיף אנימציה בעתיד, כרגע זה פשוט קופץ לסוף כמו שביקשת
         }
-    }, 50); 
+    }, 10000); // כל 10 שניות
 }
-startMessageScroller();
+
+// הפעלת הקרוסלה
+startMessageCarousel();
 </script>
 </body>
 </html>
