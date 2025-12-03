@@ -14,7 +14,7 @@
       --danger:#ff6b6b;
       --radius:18px;
       --news-height:46px;
-      --news-speed:90s;   /* מהירות גלילת חדשות – קטן = מהר יותר */
+      --news-speed:120s;   /* מהירות גלילת חדשות – קטן = מהר יותר */
     }
 
     html,body{height:100%}
@@ -145,7 +145,7 @@
       border-radius:14px;
       background:rgba(255,255,255,.03);
       padding:12px;
-      overflow:visible;
+      overflow:visible;  /* ללא גלילה פנימית במצב עריכה */
       min-height:0;
       flex:1;
     }
@@ -189,7 +189,7 @@
 
     /* ===== DISPLAY MODE – קרוסלה ===== */
     body.display .msgs-toolbar{display:none!important}
-    body.display .msg-board{overflow:hidden}
+    body.display .msg-board{overflow:hidden}  /* במצב תצוגה כן חותך ומראה רק קרוסלה */
     body.display .msgs{display:none}
 
     .viewer{
@@ -606,33 +606,48 @@ async function loadNews(){
     'https://www.ynet.co.il/Integration/StoryRss2.xml',
     'https://rss.walla.co.il/feed/1?type=main'
   ];
+
   let headlines = [];
+
+  // לוקחים הרבה יותר כותרות מכל מקור
   for(const src of sources){
     try{
       const items = await fetchRSSJson(src);
+      // עד 40 מכל מקור
       headlines = headlines.concat(
-        items.slice(0,10).map(it => ({t:it.title,u:it.link}))
+        items.slice(0,40).map(it => ({t:it.title,u:it.link}))
       );
     }catch(e){}
   }
+
+  // דה־דופליקציה – עד 40 כותרות ייחודיות
   const seen = new Set();
   const dedup = [];
   for(const h of headlines){
     if(!h.t || seen.has(h.t)) continue;
     seen.add(h.t);
     dedup.push(h);
-    if(dedup.length >= 15) break;
+    if(dedup.length >= 40) break;   // עד 40 כותרות שונות
   }
+
   const track = document.getElementById('newsTrack');
   if(!dedup.length){
     track.textContent = 'אין חדשות להצגה';
     return;
   }
-  const html = dedup.map(h =>
+
+  // בונים שורה אחת של כותרות
+  const row = dedup.map(h =>
     `<span class="news-item">• <a href="${h.u}" target="_blank" rel="noopener">${h.t.replace(/"/g,'&quot;')}</a></span>`
   ).join(' ');
-  // משכפלים פעם נוספת כדי שהמרקיז ירגיש רציף
-  track.innerHTML = html + html;
+
+  // משכפלים מספר פעמים כדי שהמרקיזה תרגיש אינסופית
+  const repeatTimes = 4; // אפשר להעלות ל־6 אם תרצה יותר צפוף/ארוך
+  let html = '';
+  for(let i=0;i<repeatTimes;i++){
+    html += row + ' ';
+  }
+  track.innerHTML = html;
 }
 loadNews();
 setInterval(loadNews,15*60*1000);
