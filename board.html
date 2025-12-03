@@ -13,9 +13,10 @@
       --accent:#4da3ff;
       --danger:#ff6b6b;
       --radius:18px;
-      /* עדכון: הגדלתי את גובה בר החדשות */
       --news-height:60px;
-      --news-speed:400s;
+      
+      /* מהירות החדשות: 30 שניות לסיבוב מלא (מהר יותר) */
+      --news-speed:30s; 
     }
     html,body{height:100%}
     body{margin:0;background:var(--bg);color:var(--text);font-family:Heebo,Arial,sans-serif;}
@@ -36,26 +37,26 @@
     .msgs-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:10px}
     .btn{background:transparent;border:1px solid rgba(255,255,255,.16);color:var(--text);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}
     
-    /* עדכון: הסתרת פס הגלילה וטיפול בגלילה */
+    /* הסתרת פס הגלילה וטיפול בגלילה */
     .msg-board{position:relative;isolation:isolate;border-radius:14px;background:rgba(255,255,255,.03);padding:12px;overflow:hidden;min-height:0;flex:1}
     .msg-board::before{content:"";position:absolute;inset:-20%;background:radial-gradient(1200px 220px at 10% 20%, rgba(77,163,255,.07), transparent 55%), radial-gradient(800px 200px at 90% 80%, rgba(53,211,153,.06), transparent 60%);filter:blur(10px);z-index:-1;animation:pan 25s linear infinite}
     @keyframes pan{0%{transform:translateX(0)}50%{transform:translateX(-4%)}100%{transform:translateX(0)}}
     
-    .msgs{display:grid;gap:16px; padding-bottom: 20px;} /* ריווח גדול יותר בין הודעות */
+    .msgs{display:grid;gap:16px; padding-bottom: 20px;}
     .msg{background:rgba(0,0,0,.18);padding:20px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);animation:fadeUp .5s ease forwards}
-    /* עדכון: הגדלת טקסט ההודעות */
+    /* פונט מוגדל להודעות */
     .msg .text{font-size:24px;line-height:1.4; font-weight: 500;} 
     @keyframes fadeUp{to{opacity:1;transform:none}}
     
-    /* עדכון: עיצוב בר החדשות להצמדה לימין */
+    /* בר חדשות */
     .newsbar{position:fixed;inset-inline:0;bottom:0;height:var(--news-height);background:rgba(0,0,0,.85);color:#fff;z-index:9999;border-top:1px solid rgba(255,255,255,.2); display: flex;}
     .news-inner{width: 100%; height:100%;display:flex;align-items:center; padding:0;}
     
-    /* עדכון: עיצוב התווית "חדשות" */
+    /* כותרת חדשות דבוקה לימין */
     .news-label{
         font-weight:800; 
         font-size: 20px;
-        background: var(--accent); /* רקע כחול בולט */
+        background: var(--accent);
         height: 100%;
         display: flex;
         align-items: center;
@@ -67,11 +68,10 @@
     
     .news-track{white-space:nowrap;animation:newsMarquee var(--news-speed) linear infinite; flex: 1; overflow: hidden; display: flex; align-items: center; height: 100%;}
     
-    /* עדכון: הגדלת טקסט החדשות */
     .news-item{display:inline-block;margin:0 40px;font-size:24px; font-weight: 300;}
     .news-item a{color:#fff;text-decoration:none}
     
-    @keyframes newsMarquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}} /* תיקון לאנימציה חלקה יותר */
+    @keyframes newsMarquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
     
     body.display .msgs-toolbar{display:none!important}
   </style>
@@ -121,7 +121,7 @@ async function loadWeather(){try{const u=`https://api.open-meteo.com/v1/forecast
 loadWeather();setInterval(loadWeather,1800000);
 
 const LS_KEYS={title:'board.title',msgs:'board.msgs',edits:'board.edit'};const titleEl=document.getElementById('boardTitle');const msgsEl=document.getElementById('msgs');const addBtn=document.getElementById('addMsg');const toggleBtn=document.getElementById('toggleEdit');(function(){const t=localStorage.getItem(LS_KEYS.title);if(t) titleEl.textContent=t;const arr=JSON.parse(localStorage.getItem(LS_KEYS.msgs)||'[]');arr.forEach(m=>addMsgDOM(m.text))})();let titleSaveTimeout;['input','blur'].forEach(ev=>titleEl.addEventListener(ev,()=>{clearTimeout(titleSaveTimeout);titleSaveTimeout=setTimeout(()=>localStorage.setItem(LS_KEYS.title,titleEl.textContent.trim()),300)}));
-function addMsgDOM(text){const card=document.createElement('div');card.className='msg';const t=document.createElement('div');t.className='text';t.textContent=text||'טקסט ההודעה…';card.append(t);msgsEl.append(card);/*card.scrollIntoView({behavior:'smooth',block:'end'}) - removed for auto scroll*/}
+function addMsgDOM(text){const card=document.createElement('div');card.className='msg';const t=document.createElement('div');t.className='text';t.textContent=text||'טקסט ההודעה…';card.append(t);msgsEl.append(card);}
 function saveMsgs(){const arr=[...msgsEl.querySelectorAll('.msg .text')].map(el=>({text:el.textContent.trim()}));localStorage.setItem(LS_KEYS.msgs,JSON.stringify(arr))}
 function setEdit(v){titleEl.setAttribute('contenteditable',v);msgsEl.querySelectorAll('.msg .text').forEach(el=>el.setAttribute('contenteditable',v));toggleBtn.textContent=v?'צא ממצב עריכה':'מצב עריכה';localStorage.setItem(LS_KEYS.edits,JSON.stringify({edit:v}))}
 try{const ed=JSON.parse(localStorage.getItem(LS_KEYS.edits)||'{}');if(ed.edit) setEdit(true)}catch{}
@@ -132,7 +132,7 @@ loadShabbat();setInterval(loadShabbat,21600000);
 
 async function fetchRSSJson(u){const api='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(u);const r=await fetch(api);if(!r.ok) throw 0;const d=await r.json();return d.items||[]}
 async function loadNews(){const s=['https://www.ynet.co.il/Integration/StoryRss2.xml','https://rss.walla.co.il/feed/1?type=main'];let h=[];for(const u of s){try{const i=await fetchRSSJson(u);h=h.concat(i.slice(0,10).map(it=>({t:it.title,u:it.link})))}catch(e){}}const seen=new Set();const dedup=[];for(const x of h){if(!x.t||seen.has(x.t)) continue;seen.add(x.t);dedup.push(x);if(dedup.length>=15) break}const track=document.getElementById('newsTrack');
-// שכפול החדשות כדי ליצור אפקט גלילה רציף (Marquee) חלק יותר
+// שכפול החדשות כדי ליצור לופ אינסופי חלק
 const newsHtml = dedup.length? dedup.map(h=>`<span class='news-item'>• ${h.t}</span>`).join('') : 'אין חדשות';
 track.innerHTML= newsHtml + newsHtml;}
 loadNews();setInterval(loadNews,900000);
@@ -140,36 +140,33 @@ loadNews();setInterval(loadNews,900000);
 (function(){const u=new URL(location.href);const disp=u.searchParams.get('display');if(disp==='1'||disp==='true') document.body.classList.add('display')})();
 (function(){const u=new URL(location.href);const c=u.searchParams.get('city');const lat=parseFloat(u.searchParams.get('lat'));const lng=parseFloat(u.searchParams.get('lng'));if(c) CONFIG.locationName=c;if(!Number.isNaN(lat)&&!Number.isNaN(lng)){CONFIG.latitude=lat;CONFIG.longitude=lng}document.getElementById('shabCity').textContent=`– ${CONFIG.locationName}`})();
 
-// --- מנגנון גלילה אוטומטית להודעות ---
+// --- גלילה אוטומטית להודעות ---
 function startMessageScroller() {
     const board = document.getElementById('msgBoardContainer');
-    let scrollSpeed = 1; // מהירות הגלילה (גבוה יותר = מהיר יותר)
+    let scrollSpeed = 1; 
     let isPaused = false;
 
     setInterval(() => {
-        // בודק אם יש צורך בגלילה (התוכן גדול מהקופסה)
+        // גולל רק אם יש צורך (התוכן ארוך מהקופסה)
         if (board.scrollHeight > board.clientHeight) {
-            
-            // אם המשתמש במצב עריכה - אל תגלול
+            // לא גולל בזמן עריכה
             if(document.getElementById('toggleEdit').textContent === 'צא ממצב עריכה') return;
-
+            
             if(!isPaused) {
                 board.scrollTop += scrollSpeed;
             }
-
-            // אם הגענו לתחתית
+            // כשהגיע לסוף
             if (Math.ceil(board.scrollTop + board.clientHeight) >= board.scrollHeight) {
                 isPaused = true;
                 setTimeout(() => {
-                    board.scrollTop = 0; // חזרה למעלה
+                    board.scrollTop = 0; // קפיצה להתחלה
                     isPaused = false;
-                }, 3000); // מחכה 3 שניות למטה לפני שחוזר למעלה
+                }, 3000); // המתנה של 3 שניות
             }
         }
-    }, 50); // רץ כל 50 מילישניות
+    }, 50); 
 }
 startMessageScroller();
-
 </script>
 </body>
 </html>
