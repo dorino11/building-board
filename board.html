@@ -14,13 +14,13 @@
       --danger:#ff6b6b;
       --radius:18px;
       
-      /* שינוי 1: הגדלת גובה הבר ומהירות הגלילה */
-      --news-height:60px; 
-      --news-speed:30s; 
+      /* עדכון עיצוב לחדשות */
+      --news-height:60px;
+      --news-speed:30s; /* מהירות רגילה */
     }
     html,body{height:100%}
     body{margin:0;background:var(--bg);color:var(--text);font-family:Heebo,Arial,sans-serif;}
-    .wrap{min-height:100%;display:flex;flex-direction:column;max-width:1200px;margin:0 auto;padding:28px;padding-bottom:calc(var(--news-height) + 20px)}
+    .wrap{min-height:100%;display:flex;flex-direction:column;max-width:1200px;margin:0 auto;padding:28px;padding-bottom:calc(var(--news-height) + 20px);box-sizing:border-box}
     header{display:grid;grid-template-columns:1fr auto;align-items:center;margin-bottom:12px}
     .title{font-size:42px;font-weight:800}
     .clock{display:flex;flex-direction:column;align-items:flex-end}
@@ -42,67 +42,85 @@
     .msgs{display:grid;gap:12px}
     .msg{background:rgba(0,0,0,.18);padding:14px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);animation:fadeUp .5s ease forwards}
     
-    /* שינוי 2: הגדלת טקסט ההודעות */
-    .msg .text{font-size:22px;line-height:1.5} 
-    
+    /* הגדלת פונט להודעות */
+    .msg .text{font-size:22px;line-height:1.5}
     @keyframes fadeUp{to{opacity:1;transform:none}}
 
-    /* --- עיצוב חדש לבר החדשות (CSS בלבד) --- */
+    /* --- תיקון עיצוב חדשות: הכל בשורה אחת, כותרת מימין --- */
     .newsbar{
         position:fixed;
         inset-inline:0;
         bottom:0;
         height:var(--news-height);
-        background:rgba(0,0,0,.9); /* רקע כהה יותר לקונטרסט */
+        background:rgba(0,0,0,.9);
         color:#fff;
         z-index:9999;
         border-top:1px solid rgba(255,255,255,.2);
-        display: flex; /* חשוב כדי שהאלמנטים יהיו אחד ליד השני */
+        display: flex; /* מסדר את האלמנטים אחד ליד השני */
         padding: 0;
     }
     
-    .news-inner{
-        width: 100%;
-        max-width: 100%; /* ביטול הגבלת רוחב כדי שיתפוס את כל המסך */
-        height:100%;
-        display:flex;
-        align-items:center;
-        gap:0; 
-        padding:0;
-        margin: 0;
-    }
-
+    /* הכותרת "חדשות" - קבועה בצד ימין */
     .news-label{
         font-weight:800;
-        background: var(--accent); /* רקע כחול לכותרת */
+        background: var(--accent);
         height: 100%;
         display: flex;
         align-items: center;
         padding: 0 30px;
-        font-size: 22px; /* פונט גדול יותר לכותרת */
-        z-index: 10; /* שיהיה מעל הטקסט הרץ */
-        box-shadow: 5px 0 15px rgba(0,0,0,0.5); /* צל כדי להפריד מהחדשות */
+        font-size: 22px;
+        z-index: 10;
+        box-shadow: 5px 0 15px rgba(0,0,0,0.5);
+        flex-shrink: 0; /* שלא תתכווץ */
+    }
+
+    .news-inner{
+        flex: 1; /* תופס את שאר המקום */
+        height:100%;
+        display:flex;
+        align-items:center;
+        overflow: hidden; /* מסתיר את מה שיוצא מהמסך */
+        position: relative;
     }
 
     .news-track{
         white-space:nowrap;
+        /* אנימציה שמתחילה מימין לשמאל */
         animation:newsMarquee var(--news-speed) linear infinite;
-        display: flex;
-        align-items: center;
-        height: 100%;
+        position: absolute; 
+        left: 100%; /* מתחיל מחוץ למסך בצד ימין (ביחס למיכל הפנימי) */
     }
 
     .news-item{
         display:inline-block;
-        margin:0 40px; /* רווח גדול יותר בין ידיעות */
-        font-size:24px; /* פונט גדול לידיעות */
+        margin:0 40px;
+        font-size:24px;
         font-weight: 300;
     }
-
     .news-item a{color:#fff;text-decoration:none}
     
-    @keyframes newsMarquee{0%{transform:translateX(0)}100%{transform:translateX(-100%)}} /* תיקון כיוון */
+    /* תיקון האנימציה - מעבר מלא מימין לשמאל */
+    @keyframes newsMarquee{
+        0% { transform: translateX(0); left: 100%; }
+        100% { transform: translateX(-100%); left: 0; } /* מזיז את כל השורה שמאלה */
+    }
     
+    /* התאמה למקרה שהאנימציה צריכה להיות פשוטה יותר: */
+    @keyframes newsMarquee {
+        from { transform: translateX(0%); }
+        to { transform: translateX(-100%); }
+    }
+    /* בגלל שזה RTL והאלמנט בתוך פלקס, נשתמש במיקום אבסולוטי פשוט יותר: */
+    .news-track {
+        position: static;
+        transform: translateX(100%); 
+        animation: scrollText var(--news-speed) linear infinite;
+    }
+    @keyframes scrollText {
+        0% { transform: translateX(100%); } /* מתחיל מימין */
+        100% { transform: translateX(-150%); } /* מסיים עמוק בשמאל */
+    }
+
     body.display .msgs-toolbar{display:none!important}
   </style>
 </head>
@@ -135,7 +153,14 @@
       </div>
     </section>
   </div>
-  <div class="newsbar"><div class="news-inner"><div class="news-label">חדשות</div><div class="news-track" id="newsTrack">טוען…</div></div></div>
+  
+  <div class="newsbar">
+      <div class="news-label">חדשות</div>
+      <div class="news-inner">
+          <div class="news-track" id="newsTrack">טוען…</div>
+      </div>
+  </div>
+
 <script>
 const CONFIG={locationName:'רחובות',latitude:31.8948,longitude:34.8090,tzid:'Asia/Jerusalem',candleOffsetMinutes:18,havdalahOffsetDeg:8.5};
 function updateClock(){const now=new Date();document.getElementById('time').textContent=now.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});document.getElementById('date').textContent=now.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}setInterval(updateClock,1000);updateClock();
@@ -150,9 +175,48 @@ try{const ed=JSON.parse(localStorage.getItem(LS_KEYS.edits)||'{}');if(ed.edit) s
 if(addBtn) addBtn.addEventListener('click',()=>{addMsgDOM();setEdit(true);saveMsgs()});if(toggleBtn) toggleBtn.addEventListener('click',()=>setEdit(toggleBtn.textContent==='מצב עריכה'));document.getElementById('clearAll').addEventListener('click',()=>{if(confirm('למחוק את כל ההודעות?')){msgsEl.innerHTML='';saveMsgs()}});msgsEl.addEventListener('input',saveMsgs);
 const cityEl=document.getElementById('shabCity');const candlesEl=document.getElementById('candles');const havdalahEl=document.getElementById('havdalah');cityEl.textContent=`– ${CONFIG.locationName}`;async function loadShabbat(){try{const p=new URLSearchParams({cfg:'json',latitude:String(CONFIG.latitude),longitude:String(CONFIG.longitude),tzid:CONFIG.tzid,m:String(CONFIG.havdalahOffsetDeg),b:String(CONFIG.candleOffsetMinutes)});const r=await fetch(`https://www.hebcal.com/shabbat?${p.toString()}`);if(!r.ok) throw 0;const d=await r.json();const now=Date.now();const items=(d.items||[]).filter(i=>['candles','havdalah'].includes(i.category));const nextCandles=items.filter(i=>i.category==='candles').map(x=>({t:new Date(x.date).getTime()})).sort((a,b)=>a.t-b.t).find(x=>x.t>=now);const nextHavdalah=items.filter(i=>i.category==='havdalah').map(x=>({t:new Date(x.date).getTime()})).sort((a,b)=>a.t-b.t).find(x=>x.t>=now);candlesEl.textContent= nextCandles? new Date(nextCandles.t).toLocaleString('he-IL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—';havdalahEl.textContent= nextHavdalah? new Date(nextHavdalah.t).toLocaleString('he-IL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'}) : '—'}catch(e){candlesEl.textContent='לא זמין';havdalahEl.textContent='לא זמין'}}
 loadShabbat();setInterval(loadShabbat,21600000);
-async function fetchRSSJson(u){const api='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(u);const r=await fetch(api);if(!r.ok) throw 0;const d=await r.json();return d.items||[]}
-async function loadNews(){const s=['https://www.ynet.co.il/Integration/StoryRss2.xml','https://rss.walla.co.il/feed/1?type=main'];let h=[];for(const u of s){try{const i=await fetchRSSJson(u);h=h.concat(i.slice(0,10).map(it=>({t:it.title,u:it.link})))}catch(e){}}const seen=new Set();const dedup=[];for(const x of h){if(!x.t||seen.has(x.t)) continue;seen.add(x.t);dedup.push(x);if(dedup.length>=15) break}const track=document.getElementById('newsTrack');track.innerHTML= dedup.length? (dedup.map(h=>`<span class='news-item'>• <a href='${h.u}' target='_blank'>${h.t}</a></span>`).join('')+dedup.map(h=>`<span class='news-item'>• <a href='${h.u}' target='_blank'>${h.t}</a></span>`).join('')):'אין חדשות'}
+
+// --- תיקון לוגיקת החדשות בלבד (כדי למנוע באג של רשימה ריקה) ---
+async function fetchRSSJson(u){
+    // הוספת Timestamp כדי למנוע Cache (זה מה שגורם לבאג של ה-2 שורות)
+    const urlWithTime = u + '&t=' + Date.now();
+    const api='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(urlWithTime);
+    const r=await fetch(api);
+    if(!r.ok) throw 0;
+    const d=await r.json();
+    return d.items||[]
+}
+
+async function loadNews(){
+    const s=['https://www.ynet.co.il/Integration/StoryRss2.xml','https://rss.walla.co.il/feed/1?type=main'];
+    let h=[];
+    for(const u of s){
+        try{
+            const i=await fetchRSSJson(u);
+            // הסרתי את ה-slice(0,10) כדי לקבל את כל הכתבות
+            h=h.concat(i.map(it=>({t:it.title,u:it.link})));
+        }catch(e){}
+    }
+    const seen=new Set();
+    const dedup=[];
+    for(const x of h){
+        if(!x.t||seen.has(x.t)) continue;
+        seen.add(x.t);
+        dedup.push(x);
+        if(dedup.length>=50) break; // הגדלתי ל-50 כתבות
+    }
+    
+    const track=document.getElementById('newsTrack');
+    // שכפול התוכן פעמיים כדי ליצור רצף ויזואלי ללא רווחים גדולים
+    if(dedup.length) {
+        const content = dedup.map(h=>`<span class='news-item'>• <a href='${h.u}' target='_blank'>${h.t}</a></span>`).join('');
+        track.innerHTML = content + content; // הכפלה
+    } else {
+        track.innerHTML = 'אין חדשות';
+    }
+}
 loadNews();setInterval(loadNews,900000);
+
 (function(){const u=new URL(location.href);const disp=u.searchParams.get('display');if(disp==='1'||disp==='true') document.body.classList.add('display')})();
 (function(){const u=new URL(location.href);const c=u.searchParams.get('city');const lat=parseFloat(u.searchParams.get('lat'));const lng=parseFloat(u.searchParams.get('lng'));if(c) CONFIG.locationName=c;if(!Number.isNaN(lat)&&!Number.isNaN(lng)){CONFIG.latitude=lat;CONFIG.longitude=lng}document.getElementById('shabCity').textContent=`– ${CONFIG.locationName}`})();
 </script>
