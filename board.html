@@ -15,7 +15,7 @@
       --radius:18px;
       --news-height:60px;
       
-      /* מהירות החדשות: 30 שניות לסיבוב מלא (מהר יותר) */
+      /* עודכן לפי בקשתך */
       --news-speed:20s; 
     }
     html,body{height:100%}
@@ -131,10 +131,29 @@ const cityEl=document.getElementById('shabCity');const candlesEl=document.getEle
 loadShabbat();setInterval(loadShabbat,21600000);
 
 async function fetchRSSJson(u){const api='https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(u);const r=await fetch(api);if(!r.ok) throw 0;const d=await r.json();return d.items||[]}
-async function loadNews(){const s=['https://www.ynet.co.il/Integration/StoryRss2.xml','https://rss.walla.co.il/feed/1?type=main'];let h=[];for(const u of s){try{const i=await fetchRSSJson(u);h=h.concat(i.slice(0,10).map(it=>({t:it.title,u:it.link})))}catch(e){}}const seen=new Set();const dedup=[];for(const x of h){if(!x.t||seen.has(x.t)) continue;seen.add(x.t);dedup.push(x);if(dedup.length>=15) break}const track=document.getElementById('newsTrack');
-// שכפול החדשות כדי ליצור לופ אינסופי חלק
-const newsHtml = dedup.length? dedup.map(h=>`<span class='news-item'>• ${h.t}</span>`).join('') : 'אין חדשות';
-track.innerHTML= newsHtml + newsHtml;}
+async function loadNews(){
+  const s=['https://www.ynet.co.il/Integration/StoryRss2.xml','https://rss.walla.co.il/feed/1?type=main'];
+  let h=[];
+  for(const u of s){
+    try{
+      const i=await fetchRSSJson(u);
+      // הסרתי את ה-slice כדי לקחת את כל החדשות מהפיד ולא רק 10
+      h=h.concat(i.map(it=>({t:it.title,u:it.link})));
+    }catch(e){}
+  }
+  const seen=new Set();
+  const dedup=[];
+  for(const x of h){
+    if(!x.t||seen.has(x.t)) continue;
+    seen.add(x.t);
+    dedup.push(x);
+    // הגדלתי את המגבלה מ-15 ל-50 כותרות
+    if(dedup.length>=50) break;
+  }
+  const track=document.getElementById('newsTrack');
+  const newsHtml = dedup.length? dedup.map(h=>`<span class='news-item'>• ${h.t}</span>`).join('') : 'אין חדשות';
+  track.innerHTML= newsHtml + newsHtml;
+}
 loadNews();setInterval(loadNews,900000);
 
 (function(){const u=new URL(location.href);const disp=u.searchParams.get('display');if(disp==='1'||disp==='true') document.body.classList.add('display')})();
@@ -147,21 +166,18 @@ function startMessageScroller() {
     let isPaused = false;
 
     setInterval(() => {
-        // גולל רק אם יש צורך (התוכן ארוך מהקופסה)
         if (board.scrollHeight > board.clientHeight) {
-            // לא גולל בזמן עריכה
             if(document.getElementById('toggleEdit').textContent === 'צא ממצב עריכה') return;
             
             if(!isPaused) {
                 board.scrollTop += scrollSpeed;
             }
-            // כשהגיע לסוף
             if (Math.ceil(board.scrollTop + board.clientHeight) >= board.scrollHeight) {
                 isPaused = true;
                 setTimeout(() => {
-                    board.scrollTop = 0; // קפיצה להתחלה
+                    board.scrollTop = 0; 
                     isPaused = false;
-                }, 3000); // המתנה של 3 שניות
+                }, 3000); 
             }
         }
     }, 50); 
