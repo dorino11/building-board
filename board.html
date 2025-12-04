@@ -213,36 +213,61 @@
       display:block !important;
     }
 
-    .viewer{
-      display:none;
-      position:absolute;
-      inset:12px;
-      z-index:2;
-    }
-    
-    .viewer-item{
-      position:absolute;
-      top:50%;
-      left:50%;
-      transform:translate(-50%, -50%) translateY(10px);
-      max-width:90%;
-      max-height:90%;
-      overflow-y:auto;
-      opacity:0;
-      transition:opacity .6s ease, transform .6s ease;
-      font-size:24px;
-      line-height:1.8;
-      background:rgba(0,0,0,.18);
-      padding:22px;
-      border-radius:14px;
-      box-shadow:0 6px 14px rgba(0,0,0,.2);
-      text-align:right;
-      word-wrap:break-word;
-    }
-    .viewer-item.active{
-      opacity:1;
-      transform:translate(-50%, -50%) translateY(0);
-    }
+    /* ===== DISPLAY MODE – קרוסלה ===== */
+body.display .msgs-toolbar{
+  display:none !important;
+}
+body.display .msg-board{
+  overflow:hidden;
+}
+body.display .msgs{
+  display:none !important;
+}
+body.display .viewer{
+  display:block !important;
+}
+
+/* הקרוסלה תיראה בדיוק כמו הכרטיסים של .msg */
+.viewer{
+  display:none;
+  position:relative;
+  inset:auto;
+  z-index:2;
+  height:100%;
+}
+
+.viewer-item{
+  /* רוחב מלא, מיושר למעלה – כמו .msg */
+  display:none;
+  background:rgba(0,0,0,.18);
+  padding:14px;
+  border-radius:12px;
+  box-shadow:0 6px 14px rgba(0,0,0,.18);
+  font-size:18px;
+  line-height:1.6;
+  text-align:right;
+  word-wrap:break-word;
+
+  /* אנימציה עדינה כמו כניסה מלמטה */
+  opacity:0;
+  transform:translateY(8px);
+  transition:opacity .4s ease, transform .4s ease;
+}
+
+.viewer-item.active{
+  display:block;
+  opacity:1;
+  transform:translateY(0);
+}
+
+@media (max-width:768px){
+  /* במובייל גם אותו סטייל כמו .msg */
+  .viewer-item{
+    font-size:18px;
+    padding:14px;
+  }
+}
+
 
     /* ===== NEWS BAR – גלילה רציפה ===== */
     .newsbar{
