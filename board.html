@@ -400,40 +400,56 @@ function updateClock(){
 }
 setInterval(updateClock,1000); updateClock();
 
-/* ===== מזג אוויר (Open-Meteo) ===== */
-function wxCodeToHe(code){
-  const map = {
-    0:'שמיים בהירים',1:'מעונן חלקית',2:'מעונן',3:'מעונן כבד',
-    45:'ערפל',48:'ערפל קפוא',
-    51:'טפטוף קל',53:'טפטוף',55:'טפטוף חזק',
-    61:'גשם קל',63:'גשם',65:'גשם חזק',
-    71:'שלג קל',73:'שלג',75:'שלג כבד',
-    80:'ממטרים קלים',81:'ממטרים',82:'ממטרים חזקים',
-    95:'סופות רעמים',96:'סופה עם ברד',99:'סופה עם ברד כבד'
-  };
-  return map[code] || 'מעודכן';
-}
+/* ===== מזג אוויר (IMS - השירות המטאורולוגי הישראלי) ===== */
 async function loadWeather(){
   try{
-    const url =
-      `https://api.open-meteo.com/v1/forecast?latitude=${CONFIG.latitude}&longitude=${CONFIG.longitude}` +
-      `&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(CONFIG.tzid)}`;
-    const res = await fetch(url,{cache:'no-store'});
-    if(!res.ok) throw 0;
-    const d = await res.json();
-    const t   = Math.round(d.current.temperature_2m);
-    const w   = d.current.weather_code;
-    const max = Math.round(d.daily.temperature_2m_max[0]);
-    const min = Math.round(d.daily.temperature_2m_min[0]);
-    document.getElementById('weatherInline').textContent =
-      `מזג האוויר: ${t}°C · ${wxCodeToHe(w)} · היום: ${min}°–${max}°`;
+    // קריאה ל-API של השירות המטאורולוגי
+    const res = await fetch('https://ims.gov.il/sites/default/files/ims_data/xml_files/TM46_latest.xml', {cache:'no-store'});
+    if(!res.ok) throw new Error('Failed to fetch');
+    
+    const text = await res.text();
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, 'text/xml');
+    
+    // חיפוש התחנה הקרובה לרחובות - תחנת בית דגן
+    const stations = xml.querySelectorAll('Location');
+    let temp = null;
+    let desc = 'נתונים לא זמינים';
+    
+    for(const station of stations){
+      const name = station.querySelector('LocationMetaData LocationNameHeb')?.textContent;
+      if(name && name.includes('בית דגן')){
+        const tempEl = station.querySelector('BP_Temp');
+        if(tempEl) temp = Math.round(parseFloat(tempEl.textContent));
+        break;
+      }
+    }
+    
+    if(temp !== null){
+      document.getElementById('weatherInline').textContent = `מזג האוויר: ${temp}°C`;
+    } else {
+      throw new Error('No data');
+    }
   }catch(e){
-    document.getElementById('weatherInline').textContent = 'מזג האוויר לא זמין';
+    // נסיון חלופי עם Open-Meteo
+    try{
+      const url =
+        `https://api.open-meteo.com/v1/forecast?latitude=${CONFIG.latitude}&longitude=${CONFIG.longitude}` +
+        `&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(CONFIG.tzid)}`;
+      const res = await fetch(url,{cache:'no-store'});
+      if(!res.ok) throw 0;
+      const d = await res.json();
+      const t   = Math.round(d.current.temperature_2m);
+      const w   = d.current.weather_code;
+      const max = Math.round(d.daily.temperature_2m_max[0]);
+      const min = Math.round(d.daily.temperature_2m_min[0]);
+      document.getElementById('weatherInline').textContent =
+        `מזג האוויר: ${t}°C · ${wxCodeToHe(w)} · היום: ${min}°–${max}°`;
+    }catch(e2){
+      document.getElementById('weatherInline').textContent = 'מזג האוויר לא זמין';
+    }
   }
 }
-loadWeather();
-setInterval(loadWeather,30*60*1000);
-
 /* ===== הודעות לדיירים – localStorage + קרוסלה ===== */
 const LS_KEYS = {
   title:'board.title',
