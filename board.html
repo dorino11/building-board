@@ -16,16 +16,16 @@
       --news-height:52px;
     }
 
-    html,body{height:100%}
+    html,body{height:100%;margin:0;padding:0}
     body{
-      margin:0;
       background:var(--bg);
       color:var(--text);
       font-family:Heebo,Arial,sans-serif;
+      overflow-x:hidden;
     }
 
     .wrap{
-      min-height:100%;
+      min-height:100vh;
       max-width:1200px;
       margin:0 auto;
       padding:28px;
@@ -145,7 +145,7 @@
       background:rgba(255,255,255,.03);
       padding:12px;
       overflow:visible;
-      min-height:0;
+      min-height:200px;
       flex:1;
     }
     .msg-board::before{
@@ -199,7 +199,7 @@
       text-align:right;
     }
     .viewer-item{
-      max-width:100%;
+      max-width:90%;
       opacity:0;
       transform:translateY(6px);
       transition:opacity .6s ease, transform .6s ease;
@@ -209,6 +209,7 @@
       padding:22px;
       border-radius:14px;
       box-shadow:0 6px 14px rgba(0,0,0,.2);
+      position:absolute;
     }
     .viewer-item.active{
       opacity:1;
@@ -250,8 +251,6 @@
       align-items:center;
       position:relative;
       z-index:2;
-      margin-inline-start:0;
-      margin-inline-end:0;
     }
     .news-track{
       flex:1;
@@ -291,7 +290,6 @@
       }
     }
 
-    /* השהיית אנימציה בהובר */
     .news-track:hover .news-content{
       animation-play-state:paused;
     }
@@ -299,19 +297,19 @@
     @media (max-width:768px){
       .wrap{padding:16px;padding-bottom:calc(var(--news-height) + 16px)}
       header{grid-template-columns:1fr}
-      .title{text-align:center}
+      .title{text-align:center;font-size:32px}
       .clock{align-items:center}
-      .viewer-item{font-size:22px}
+      .time{font-size:40px}
+      .viewer-item{font-size:22px;padding:18px}
       .news-label{font-size:16px;padding:4px 18px}
       .news-item{font-size:14px}
-      .news-content{animation-duration:40s}
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
-      <div class="title" id="boardTitle" contenteditable>לוח מודעות הבניין</div>
+      <div class="title" id="boardTitle">לוח מודעות הבניין</div>
       <div class="clock">
         <div class="time" id="time">--:--</div>
         <div class="date" id="date">טוען…</div>
@@ -319,7 +317,6 @@
       </div>
     </header>
 
-    <!-- זמני שבת -->
     <section class="shabbat-wide">
       <h2 class="shab-title">זמני שבת <small id="shabCity"></small></h2>
       <div class="shab-row">
@@ -334,7 +331,6 @@
       </div>
     </section>
 
-    <!-- הודעות לדיירים -->
     <section class="board">
       <h2>הודעות לדיירים</h2>
       <div class="msgs-toolbar">
@@ -344,12 +340,11 @@
       </div>
       <div class="msg-board">
         <div class="msgs" id="msgs"></div>
-        <div class="viewer" id="viewer" aria-hidden="true"></div>
+        <div class="viewer" id="viewer"></div>
       </div>
     </section>
   </div>
 
-  <!-- חדשות תחתון -->
   <div class="newsbar">
     <div class="news-inner">
       <div class="news-label">חדשות</div>
@@ -360,7 +355,6 @@
   </div>
 
 <script>
-/* ===== קונפיג ברירת מחדל – רחובות ===== */
 const CONFIG = {
   locationName:'רחובות',
   latitude:31.8948,
@@ -370,27 +364,24 @@ const CONFIG = {
   havdalahOffsetDeg:8.5
 };
 
-/* פרמטרים מה־URL (עיר/קואורדינטות) */
 (function applyURLConfig(){
   const u = new URL(location.href);
   const city = u.searchParams.get('city');
   const lat  = parseFloat(u.searchParams.get('lat'));
   const lng  = parseFloat(u.searchParams.get('lng'));
   if(city) CONFIG.locationName = city;
-  if(!Number.isNaN(lat) && !Number.isNaN(lng)){
+  if(!isNaN(lat) && !isNaN(lng)){
     CONFIG.latitude = lat;
     CONFIG.longitude = lng;
   }
 })();
 
-/* זיהוי מצב תצוגה */
 const IS_DISPLAY = (() => {
   const p = new URLSearchParams(location.search);
   const v = p.get('display');
   return v === '1' || v === 'true';
 })();
 
-/* ===== שעון ותאריך ===== */
 function updateClock(){
   const now = new Date();
   document.getElementById('time').textContent =
@@ -398,9 +389,9 @@ function updateClock(){
   document.getElementById('date').textContent =
     now.toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 }
-setInterval(updateClock,1000); updateClock();
+setInterval(updateClock,1000);
+updateClock();
 
-/* ===== מזג אוויר (Open-Meteo) ===== */
 function wxCodeToHe(code){
   const map = {
     0:'שמיים בהירים',1:'מעונן חלקית',2:'מעונן',3:'מעונן כבד',
@@ -413,76 +404,39 @@ function wxCodeToHe(code){
   };
   return map[code] || 'מעודכן';
 }
+
 async function loadWeather(){
   try{
-    const url =
-      `https://api.open-meteo.com/v1/forecast?latitude=${CONFIG.latitude}&longitude=${CONFIG.longitude}` +
-      `&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(CONFIG.tzid)}`;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${CONFIG.latitude}&longitude=${CONFIG.longitude}&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(CONFIG.tzid)}`;
     const res = await fetch(url);
-    if(!res.ok) throw 0;
+    if(!res.ok) throw new Error('Weather fetch failed');
     const d = await res.json();
-    const t   = Math.round(d.current.temperature_2m);
-    const w   = d.current.weather_code;
+    const t = Math.round(d.current.temperature_2m);
+    const w = d.current.weather_code;
     const max = Math.round(d.daily.temperature_2m_max[0]);
     const min = Math.round(d.daily.temperature_2m_min[0]);
     document.getElementById('weatherInline').textContent =
       `מזג האוויר: ${t}°C · ${wxCodeToHe(w)} · היום: ${min}°–${max}°`;
   }catch(e){
+    console.error('Weather error:', e);
     document.getElementById('weatherInline').textContent = 'מזג האוויר לא זמין';
   }
 }
 loadWeather();
 setInterval(loadWeather,30*60*1000);
 
-/* ===== הודעות לדיירים – localStorage + קרוסלה ===== */
 const LS_KEYS = {
   title:'board.title',
-  msgs :'board.msgs',
-  edit :'board.edit'
+  msgs:'board.msgs',
+  edit:'board.edit'
 };
 
 const titleEl = document.getElementById('boardTitle');
-const msgsEl  = document.getElementById('msgs');
-const viewer  = document.getElementById('viewer');
-const addBtn  = document.getElementById('addMsg');
+const msgsEl = document.getElementById('msgs');
+const viewer = document.getElementById('viewer');
+const addBtn = document.getElementById('addMsg');
 const toggleBtn = document.getElementById('toggleEdit');
-const clearBtn  = document.getElementById('clearAll');
-
-/* טעינה ראשונית */
-(function initBoard(){
-  const t = localStorage.getItem(LS_KEYS.title);
-  if(t) titleEl.textContent = t;
-
-  const arr = JSON.parse(localStorage.getItem(LS_KEYS.msgs) || '[]');
-  
-  // אם אין הודעות, הוסף הודעות ברירת מחדל
-  if(arr.length === 0 && IS_DISPLAY){
-    arr.push({text: 'ברוכים הבאים ללוח המודעות הדיגיטלי'});
-    arr.push({text: 'להוספת הודעות, היכנס ללא ?display=1 בכתובת'});
-    localStorage.setItem(LS_KEYS.msgs, JSON.stringify(arr));
-  }
-  
-  arr.forEach(m => addMsgDOM(m.text));
-
-  try{
-    const ed = JSON.parse(localStorage.getItem(LS_KEYS.edit) || '{}');
-    if(ed.edit) setEdit(true);
-  }catch{}
-
-  if(IS_DISPLAY) document.body.classList.add('display');
-  startCarousel();
-})();
-
-/* שמירת כותרת */
-let titleSaveTimeout;
-['input','blur'].forEach(ev =>
-  titleEl.addEventListener(ev, () => {
-    clearTimeout(titleSaveTimeout);
-    titleSaveTimeout = setTimeout(() => {
-      localStorage.setItem(LS_KEYS.title, titleEl.textContent.trim());
-    }, 250);
-  })
-);
+const clearBtn = document.getElementById('clearAll');
 
 function addMsgDOM(text){
   const card = document.createElement('div');
@@ -492,14 +446,12 @@ function addMsgDOM(text){
   t.textContent = text || '';
   card.appendChild(t);
   msgsEl.appendChild(card);
-  if(!IS_DISPLAY){
-    card.scrollIntoView({behavior:'smooth',block:'end'});
-  }
 }
 
 function saveMsgs(){
   const arr = [...msgsEl.querySelectorAll('.msg .text')]
-    .map(el => ({text: el.textContent.trim()}));
+    .map(el => ({text: el.textContent.trim()}))
+    .filter(m => m.text);
   localStorage.setItem(LS_KEYS.msgs, JSON.stringify(arr));
   buildCarousel();
 }
@@ -514,19 +466,21 @@ function setEdit(on){
   localStorage.setItem(LS_KEYS.edit, JSON.stringify({edit:on}));
 }
 
-/* אירועים על כפתורים */
 if(addBtn){
   addBtn.addEventListener('click', () => {
-    addMsgDOM('');
+    addMsgDOM('הודעה חדשה');
     setEdit(true);
     saveMsgs();
   });
 }
+
 if(toggleBtn){
   toggleBtn.addEventListener('click', () => {
-    setEdit(toggleBtn.textContent === 'מצב עריכה');
+    const isEdit = toggleBtn.textContent === 'מצב עריכה';
+    setEdit(isEdit);
   });
 }
+
 if(clearBtn){
   clearBtn.addEventListener('click', () => {
     if(confirm('למחוק את כל ההודעות?')){
@@ -535,22 +489,31 @@ if(clearBtn){
     }
   });
 }
+
 msgsEl.addEventListener('input', saveMsgs);
 
-/* קרוסלת הודעות למצב תצוגה */
+let titleSaveTimeout;
+['input','blur'].forEach(ev =>
+  titleEl.addEventListener(ev, () => {
+    clearTimeout(titleSaveTimeout);
+    titleSaveTimeout = setTimeout(() => {
+      localStorage.setItem(LS_KEYS.title, titleEl.textContent.trim());
+    }, 250);
+  })
+);
+
 let carouselTimer = null;
 let carouselIndex = 0;
 
-function getMessagesArray(){
-  return [...msgsEl.querySelectorAll('.msg .text')]
-    .map(el => el.textContent.trim())
-    .filter(Boolean);
-}
-
 function buildCarousel(){
   if(!IS_DISPLAY) return;
-  const items = getMessagesArray();
+  
+  const items = [...msgsEl.querySelectorAll('.msg .text')]
+    .map(el => el.textContent.trim())
+    .filter(Boolean);
+  
   viewer.innerHTML = '';
+  
   if(items.length === 0){
     const empty = document.createElement('div');
     empty.className = 'viewer-item active';
@@ -558,19 +521,23 @@ function buildCarousel(){
     viewer.appendChild(empty);
     return;
   }
-  for(const text of items){
+  
+  items.forEach(text => {
     const el = document.createElement('div');
     el.className = 'viewer-item';
     el.textContent = text;
     viewer.appendChild(el);
-  }
+  });
+  
   carouselIndex = 0;
   activateCarouselItem(0);
 }
 
 function activateCarouselItem(i){
-  const all = [...viewer.querySelectorAll('.viewer-item')];
-  all.forEach((el,idx) => el.classList.toggle('active', idx === i));
+  const all = viewer.querySelectorAll('.viewer-item');
+  all.forEach((el, idx) => {
+    el.classList.toggle('active', idx === i);
+  });
 }
 
 function startCarousel(){
@@ -582,13 +549,39 @@ function startCarousel(){
     if(len <= 1) return;
     carouselIndex = (carouselIndex + 1) % len;
     activateCarouselItem(carouselIndex);
-  }, 10000);
+  }, 8000);
 }
 
-/* ===== זמני שבת – Hebcal ===== */
-const cityEl    = document.getElementById('shabCity');
+(function initBoard(){
+  const t = localStorage.getItem(LS_KEYS.title);
+  if(t) titleEl.textContent = t;
+
+  const arr = JSON.parse(localStorage.getItem(LS_KEYS.msgs) || '[]');
+  
+  if(arr.length === 0){
+    arr.push({text: 'ברוכים הבאים ללוח המודעות הדיגיטלי'});
+    arr.push({text: 'להוספת הודעות הסר את ?display=1 מהכתובת'});
+    localStorage.setItem(LS_KEYS.msgs, JSON.stringify(arr));
+  }
+  
+  arr.forEach(m => addMsgDOM(m.text));
+
+  try{
+    const ed = JSON.parse(localStorage.getItem(LS_KEYS.edit) || '{}');
+    if(ed.edit && !IS_DISPLAY) setEdit(true);
+  }catch(e){}
+
+  if(IS_DISPLAY){
+    document.body.classList.add('display');
+    titleEl.removeAttribute('contenteditable');
+  }
+  
+  startCarousel();
+})();
+
+const cityEl = document.getElementById('shabCity');
 const candlesEl = document.getElementById('candles');
-const havdalahEl= document.getElementById('havdalah');
+const havdalahEl = document.getElementById('havdalah');
 cityEl.textContent = `– ${CONFIG.locationName}`;
 
 async function loadShabbat(){
@@ -602,7 +595,7 @@ async function loadShabbat(){
       b:String(CONFIG.candleOffsetMinutes)
     });
     const res = await fetch('https://www.hebcal.com/shabbat?' + params.toString());
-    if(!res.ok) throw 0;
+    if(!res.ok) throw new Error('Shabbat fetch failed');
     const data = await res.json();
     const now = Date.now();
     const items = (data.items || []).filter(i => ['candles','havdalah'].includes(i.category));
@@ -624,21 +617,21 @@ async function loadShabbat(){
       ? new Date(nextHavdalah.t).toLocaleString('he-IL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'})
       : '—';
   }catch(e){
-    candlesEl.textContent  = 'לא זמין';
+    console.error('Shabbat error:', e);
+    candlesEl.textContent = 'לא זמין';
     havdalahEl.textContent = 'לא זמין';
   }
 }
 loadShabbat();
 setInterval(loadShabbat,6*60*60*1000);
 
-/* ===== חדשות – גלילה רציפה עם AllOrigins proxy ===== */
 let newsHeadlines = [];
 
 async function fetchRSSWithProxy(rssUrl){
   try {
     const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(rssUrl);
     const res = await fetch(proxyUrl);
-    if(!res.ok) throw new Error('Failed');
+    if(!res.ok) throw new Error('RSS fetch failed');
     const text = await res.text();
     
     const parser = new DOMParser();
@@ -657,7 +650,7 @@ async function fetchRSSWithProxy(rssUrl){
     
     return headlines;
   } catch(e) {
-    console.error('RSS fetch error:', e);
+    console.error('RSS error:', rssUrl, e);
     return [];
   }
 }
@@ -665,20 +658,20 @@ async function fetchRSSWithProxy(rssUrl){
 function renderNewsScroll(){
   const content = document.getElementById('newsContent');
   if(!newsHeadlines.length){
-    content.innerHTML = '<span class="news-item">אין חדשות להצגה כרגע</span>';
+    content.innerHTML = '<span class="news-item">טוען חדשות...</span>';
     content.style.animation = 'none';
     return;
   }
 
   const itemsHTML = newsHeadlines.map(h => 
-    `<span class="news-item">• <a href="${h.u}" target="_blank" rel="noopener">${h.t.replace(/"/g,'&quot;')}</a></span>`
+    `<span class="news-item">• <a href="${h.u}" target="_blank" rel="noopener">${h.t.replace(/[<>"']/g, '')}</a></span>`
   ).join('');
   
   content.innerHTML = itemsHTML + itemsHTML + itemsHTML;
   
   setTimeout(() => {
     const contentWidth = content.scrollWidth / 3;
-    const duration = contentWidth / 50;
+    const duration = Math.max(contentWidth / 50, 30);
     content.style.animationDuration = `${duration}s`;
   }, 100);
 }
@@ -705,7 +698,7 @@ async function loadNews(){
     if(dedup.length >= 30) break;
   }
 
-  newsHeadlines = dedup;
+  newsHeadlines = dedup.length > 0 ? dedup : [{t:'אין חדשות זמינות כרגע', u:'#'}];
   renderNewsScroll();
 }
 
