@@ -117,6 +117,32 @@
       margin:0 0 10px;
       font-size:22px;
     }
+
+    /* פריסה: 75% הודעות + 25% תמונה */
+    .board-layout{
+      display:flex;
+      gap:18px;
+      align-items:stretch;
+    }
+    .board-main{
+      flex:3;
+      display:flex;
+      flex-direction:column;
+      min-width:0;
+    }
+    .board-side{
+      flex:1;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .side-title{
+      margin:0 0 6px;
+      font-size:16px;
+      color:var(--muted);
+    }
+
     .msgs-toolbar{
       display:flex;
       gap:10px;
@@ -199,6 +225,51 @@
       to{opacity:1;transform:none}
     }
 
+    /* צד של תמונת סטורי */
+    .ad-frame{
+      position:relative;
+      width:100%;
+      aspect-ratio:9/16; /* סטורי אינסטגרם */
+      border-radius:16px;
+      background:rgba(0,0,0,.18);
+      box-shadow:0 6px 14px rgba(0,0,0,.18);
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .ad-frame img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:none;
+    }
+    .ad-placeholder{
+      font-size:13px;
+      color:var(--muted);
+      text-align:center;
+      padding:8px;
+    }
+    .ad-upload-label{
+      margin-top:6px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px 12px;
+      border-radius:12px;
+      border:1px dashed rgba(255,255,255,.25);
+      font-size:13px;
+      color:var(--muted);
+      cursor:pointer;
+      gap:6px;
+    }
+    .ad-upload-label input{
+      display:none;
+    }
+    body.display .ad-upload-label{
+      display:none;
+    }
+
     /* ===== DISPLAY MODE – קרוסלה ===== */
     body.display .msgs-toolbar{
       display:none !important;
@@ -213,61 +284,34 @@
       display:block !important;
     }
 
-    /* ===== DISPLAY MODE – קרוסלה ===== */
-body.display .msgs-toolbar{
-  display:none !important;
-}
-body.display .msg-board{
-  overflow:hidden;
-}
-body.display .msgs{
-  display:none !important;
-}
-body.display .viewer{
-  display:block !important;
-}
+    .viewer{
+      display:none;
+      position:relative;
+      height:100%;
+      z-index:2;
+    }
 
-/* הקרוסלה תיראה בדיוק כמו הכרטיסים של .msg */
-.viewer{
-  display:none;
-  position:relative;
-  inset:auto;
-  z-index:2;
-  height:100%;
-}
+    /* נראה בדיוק כמו .msg */
+    .viewer-item{
+      display:none;
+      background:rgba(0,0,0,.18);
+      padding:14px;
+      border-radius:12px;
+      box-shadow:0 6px 14px rgba(0,0,0,.18);
+      font-size:18px;
+      line-height:1.6;
+      text-align:right;
+      word-wrap:break-word;
 
-.viewer-item{
-  /* רוחב מלא, מיושר למעלה – כמו .msg */
-  display:none;
-  background:rgba(0,0,0,.18);
-  padding:14px;
-  border-radius:12px;
-  box-shadow:0 6px 14px rgba(0,0,0,.18);
-  font-size:18px;
-  line-height:1.6;
-  text-align:right;
-  word-wrap:break-word;
-
-  /* אנימציה עדינה כמו כניסה מלמטה */
-  opacity:0;
-  transform:translateY(8px);
-  transition:opacity .4s ease, transform .4s ease;
-}
-
-.viewer-item.active{
-  display:block;
-  opacity:1;
-  transform:translateY(0);
-}
-
-@media (max-width:768px){
-  /* במובייל גם אותו סטייל כמו .msg */
-  .viewer-item{
-    font-size:18px;
-    padding:14px;
-  }
-}
-
+      opacity:0;
+      transform:translateY(8px);
+      transition:opacity .4s ease, transform .4s ease;
+    }
+    .viewer-item.active{
+      display:block;
+      opacity:1;
+      transform:translateY(0);
+    }
 
     /* ===== NEWS BAR – גלילה רציפה ===== */
     .newsbar{
@@ -314,7 +358,7 @@ body.display .viewer{
       align-items:center;
       height:100%;
       white-space:nowrap;
-      animation:scroll-rtl 30s linear infinite;
+      animation:scroll-rtl 25s linear infinite; /* מהיר יותר */
       padding-inline-start:20px;
       will-change:transform;
     }
@@ -341,13 +385,18 @@ body.display .viewer{
       animation-play-state:paused;
     }
 
+    @media (max-width:992px){
+      .board-layout{
+        flex-direction:column;
+      }
+    }
+
     @media (max-width:768px){
       .wrap{padding:16px;padding-bottom:calc(var(--news-height) + 16px)}
       header{grid-template-columns:1fr}
       .title{text-align:center;font-size:32px}
       .clock{align-items:center}
       .time{font-size:40px}
-      .viewer-item{font-size:20px;padding:18px}
       .news-label{font-size:16px;padding:4px 18px}
       .news-item{font-size:14px}
     }
@@ -380,14 +429,33 @@ body.display .viewer{
 
     <section class="board">
       <h2>הודעות לדיירים</h2>
-      <div class="msgs-toolbar">
-        <button type="button" class="btn" id="addMsg">הוסף הודעה</button>
-        <button type="button" class="btn" id="toggleEdit">מצב עריכה</button>
-        <button type="button" class="btn" id="clearAll">נקה הכול</button>
-      </div>
-      <div class="msg-board">
-        <div class="msgs" id="msgs"></div>
-        <div class="viewer" id="viewer"></div>
+
+      <div class="board-layout">
+        <div class="board-main">
+          <div class="msgs-toolbar">
+            <button type="button" class="btn" id="addMsg">הוסף הודעה</button>
+            <button type="button" class="btn" id="toggleEdit">מצב עריכה</button>
+            <button type="button" class="btn" id="clearAll">נקה הכול</button>
+          </div>
+          <div class="msg-board">
+            <div class="msgs" id="msgs"></div>
+            <div class="viewer" id="viewer"></div>
+          </div>
+        </div>
+
+        <aside class="board-side">
+          <h3 class="side-title">פינת מודעות</h3>
+          <div class="ad-frame">
+            <img id="adImage" alt="תמונת מודעה">
+            <div class="ad-placeholder" id="adPlaceholder">
+              העלה כאן תמונה בפורמט סטורי (1080×1920)
+            </div>
+          </div>
+          <label class="ad-upload-label">
+            <span>העלה תמונה</span>
+            <input type="file" id="adUpload" accept="image/*">
+          </label>
+        </aside>
       </div>
     </section>
   </div>
@@ -474,7 +542,8 @@ setInterval(loadWeather,30*60*1000);
 const LS_KEYS = {
   title:'board.title',
   msgs:'board.msgs',
-  edit:'board.edit'
+  edit:'board.edit',
+  adImage:'board.adImage'
 };
 
 const titleEl = document.getElementById('boardTitle');
@@ -483,6 +552,9 @@ const viewer = document.getElementById('viewer');
 const addBtn = document.getElementById('addMsg');
 const toggleBtn = document.getElementById('toggleEdit');
 const clearBtn = document.getElementById('clearAll');
+const adImg = document.getElementById('adImage');
+const adPlaceholder = document.getElementById('adPlaceholder');
+const adUpload = document.getElementById('adUpload');
 
 function addMsgDOM(text){
   const card = document.createElement('div');
@@ -523,7 +595,6 @@ function setEdit(on){
 if(addBtn){
   addBtn.onclick = function(e){
     e.preventDefault();
-    console.log('Add button clicked');
     addMsgDOM('הודעה חדשה - לחץ כאן לעריכה');
     setEdit(true);
     saveMsgs();
@@ -533,7 +604,6 @@ if(addBtn){
 if(toggleBtn){
   toggleBtn.onclick = function(e){
     e.preventDefault();
-    console.log('Toggle button clicked');
     const isEditMode = toggleBtn.textContent === 'מצב עריכה';
     setEdit(isEditMode);
   };
@@ -542,7 +612,6 @@ if(toggleBtn){
 if(clearBtn){
   clearBtn.onclick = function(e){
     e.preventDefault();
-    console.log('Clear button clicked');
     if(confirm('למחוק את כל ההודעות?')){
       msgsEl.innerHTML = '';
       saveMsgs();
@@ -551,9 +620,37 @@ if(clearBtn){
 }
 
 msgsEl.addEventListener('input', function(){
-  console.log('Messages changed');
   saveMsgs();
 });
+
+function renderAdImage(){
+  if(!adImg || !adPlaceholder) return;
+  const data = localStorage.getItem(LS_KEYS.adImage);
+  if(data){
+    adImg.src = data;
+    adImg.style.display = 'block';
+    adPlaceholder.style.display = 'none';
+  }else{
+    adImg.removeAttribute('src');
+    adImg.style.display = 'none';
+    adPlaceholder.style.display = 'block';
+  }
+}
+
+if(adUpload){
+  adUpload.addEventListener('change', function(e){
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      try{
+        localStorage.setItem(LS_KEYS.adImage, ev.target.result);
+      }catch(err){}
+      renderAdImage();
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 let titleSaveTimeout;
 titleEl.addEventListener('input', function(){
@@ -613,7 +710,7 @@ function startCarousel(){
   }, 8000);
 }
 
-(function initBoard(){
+(async function initBoard(){
   const t = localStorage.getItem(LS_KEYS.title);
   if(t) titleEl.textContent = t;
 
@@ -629,6 +726,11 @@ function startCarousel(){
   
   arr.forEach(m => addMsgDOM(m.text));
 
+  const cityEl = document.getElementById('shabCity');
+  cityEl.textContent = `– ${CONFIG.locationName}`;
+
+  renderAdImage();
+
   if(!IS_DISPLAY){
     try{
       const ed = JSON.parse(localStorage.getItem(LS_KEYS.edit) || '{}');
@@ -639,14 +741,15 @@ function startCarousel(){
     titleEl.setAttribute('contenteditable', 'false');
     setTimeout(startCarousel, 100);
   }
+
+  loadShabbat();
+  loadNews();
 })();
 
-const cityEl = document.getElementById('shabCity');
-const candlesEl = document.getElementById('candles');
-const havdalahEl = document.getElementById('havdalah');
-cityEl.textContent = `– ${CONFIG.locationName}`;
-
 async function loadShabbat(){
+  const candlesEl = document.getElementById('candles');
+  const havdalahEl = document.getElementById('havdalah');
+
   try{
     const params = new URLSearchParams({
       cfg:'json',
@@ -683,7 +786,6 @@ async function loadShabbat(){
     havdalahEl.textContent = 'לא זמין';
   }
 }
-loadShabbat();
 setInterval(loadShabbat,6*60*60*1000);
 
 let newsHeadlines = [];
@@ -701,7 +803,7 @@ async function fetchRSSWithProxy(rssUrl){
     
     const headlines = [];
     items.forEach((item, idx) => {
-      if(idx >= 20) return;
+      if(idx >= 40) return; // עד 40 מכל מקור
       const title = item.querySelector('title')?.textContent;
       const link = item.querySelector('link')?.textContent;
       if(title && link) {
@@ -727,11 +829,11 @@ function renderNewsScroll(){
     `<span class="news-item">• <a href="${h.u}" target="_blank" rel="noopener">${h.t.replace(/[<>"']/g, '')}</a></span>`
   ).join('');
   
+  // משכפל 3 פעמים – עד 120 פריטים ברצף
   content.innerHTML = itemsHTML + itemsHTML + itemsHTML;
   
   setTimeout(() => {
-    const contentWidth = content.scrollWidth / 3;
-    const duration = Math.max(contentWidth / 30, 30);
+    const duration = 25; // מהירות קבועה – מהיר יותר
     content.style.animationDuration = `${duration}s`;
   }, 100);
 }
@@ -755,14 +857,12 @@ async function loadNews(){
     if(!h.t || seen.has(h.t)) continue;
     seen.add(h.t);
     dedup.push(h);
-    if(dedup.length >= 30) break;
+    if(dedup.length >= 40) break; // עד 40 כותרות ייחודיות
   }
 
   newsHeadlines = dedup.length > 0 ? dedup : [{t:'אין חדשות זמינות כרגע', u:'#'}];
   renderNewsScroll();
 }
-
-loadNews();
 setInterval(loadNews,15*60*1000);
 </script>
 </body>
