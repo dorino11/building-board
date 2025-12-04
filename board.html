@@ -16,6 +16,7 @@
       --news-height:52px;
     }
 
+    *{box-sizing:border-box}
     html,body{height:100%;margin:0;padding:0}
     body{
       background:var(--bg);
@@ -32,7 +33,6 @@
       padding-bottom:calc(var(--news-height) + 24px);
       display:flex;
       flex-direction:column;
-      box-sizing:border-box;
     }
 
     /* ===== HEADER ===== */
@@ -110,7 +110,7 @@
       box-shadow:0 12px 30px rgba(0,0,0,.25);
       display:flex;
       flex-direction:column;
-      min-height:0;
+      min-height:300px;
       flex:1;
     }
     .board h2{
@@ -132,11 +132,15 @@
       cursor:pointer;
       font-weight:600;
       font-size:14px;
-      font-family:inherit;
+      font-family:Heebo,Arial,sans-serif;
+      transition:all 0.2s;
     }
     .btn:hover{
       border-color:rgba(255,255,255,.3);
       background:rgba(255,255,255,.04);
+    }
+    .btn:active{
+      transform:scale(0.98);
     }
 
     .msg-board{
@@ -145,7 +149,8 @@
       border-radius:14px;
       background:rgba(255,255,255,.03);
       padding:12px;
-      overflow:visible;
+      overflow-y:auto;
+      overflow-x:hidden;
       min-height:200px;
       flex:1;
     }
@@ -159,6 +164,7 @@
       filter:blur(10px);
       z-index:-1;
       animation:pan 25s linear infinite;
+      pointer-events:none;
     }
     @keyframes pan{
       0%{transform:translateX(0)}
@@ -169,6 +175,8 @@
     .msgs{
       display:grid;
       gap:12px;
+      position:relative;
+      z-index:1;
     }
     .msg{
       background:rgba(0,0,0,.18);
@@ -182,44 +190,58 @@
     .msg .text{
       font-size:18px;
       line-height:1.6;
+      outline:none;
+    }
+    .msg .text[contenteditable="true"]{
+      cursor:text;
     }
     @keyframes fadeUp{
       to{opacity:1;transform:none}
     }
 
     /* ===== DISPLAY MODE – קרוסלה ===== */
-    body.display .msgs-toolbar{display:none!important}
-    body.display .msg-board{overflow:hidden}
-    body.display .msgs{display:none!important}
+    body.display .msgs-toolbar{
+      display:none !important;
+    }
+    body.display .msg-board{
+      overflow:hidden;
+    }
+    body.display .msgs{
+      display:none !important;
+    }
+    body.display .viewer{
+      display:block !important;
+    }
 
     .viewer{
+      display:none;
       position:absolute;
       inset:12px;
-      display:none;
-      place-items:center;
-      text-align:right;
-    }
-    
-    body.display .viewer{
-      display:grid;
+      z-index:2;
     }
     
     .viewer-item{
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%, -50%) translateY(10px);
       max-width:90%;
+      max-height:90%;
+      overflow-y:auto;
       opacity:0;
-      transform:translateY(6px);
       transition:opacity .6s ease, transform .6s ease;
-      font-size:28px;
+      font-size:24px;
       line-height:1.8;
       background:rgba(0,0,0,.18);
       padding:22px;
       border-radius:14px;
       box-shadow:0 6px 14px rgba(0,0,0,.2);
-      position:absolute;
+      text-align:right;
+      word-wrap:break-word;
     }
     .viewer-item.active{
       opacity:1;
-      transform:none;
+      transform:translate(-50%, -50%) translateY(0);
     }
 
     /* ===== NEWS BAR – גלילה רציפה ===== */
@@ -240,7 +262,6 @@
       display:flex;
       flex-direction:row;
       align-items:center;
-      box-sizing:border-box;
       gap:0;
     }
     .news-label{
@@ -255,7 +276,6 @@
       height:100%;
       display:flex;
       align-items:center;
-      position:relative;
       z-index:2;
     }
     .news-track{
@@ -288,12 +308,8 @@
     }
 
     @keyframes scroll-rtl{
-      0%{
-        transform:translateX(0);
-      }
-      100%{
-        transform:translateX(calc(-100% / 3));
-      }
+      0%{transform:translateX(0)}
+      100%{transform:translateX(calc(-100% / 3))}
     }
 
     .news-track:hover .news-content{
@@ -306,7 +322,7 @@
       .title{text-align:center;font-size:32px}
       .clock{align-items:center}
       .time{font-size:40px}
-      .viewer-item{font-size:22px;padding:18px}
+      .viewer-item{font-size:20px;padding:18px}
       .news-label{font-size:16px;padding:4px 18px}
       .news-item{font-size:14px}
     }
@@ -340,9 +356,9 @@
     <section class="board">
       <h2>הודעות לדיירים</h2>
       <div class="msgs-toolbar">
-        <button class="btn" id="addMsg">הוסף הודעה</button>
-        <button class="btn" id="toggleEdit">מצב עריכה</button>
-        <button class="btn" id="clearAll">נקה הכול</button>
+        <button type="button" class="btn" id="addMsg">הוסף הודעה</button>
+        <button type="button" class="btn" id="toggleEdit">מצב עריכה</button>
+        <button type="button" class="btn" id="clearAll">נקה הכול</button>
       </div>
       <div class="msg-board">
         <div class="msgs" id="msgs"></div>
@@ -424,7 +440,6 @@ async function loadWeather(){
     document.getElementById('weatherInline').textContent =
       `מזג האוויר: ${t}°C · ${wxCodeToHe(w)} · היום: ${min}°–${max}°`;
   }catch(e){
-    console.error('Weather error:', e);
     document.getElementById('weatherInline').textContent = 'מזג האוויר לא זמין';
   }
 }
@@ -471,9 +486,9 @@ function saveMsgs(){
 }
 
 function setEdit(on){
-  titleEl.setAttribute('contenteditable', on);
+  titleEl.setAttribute('contenteditable', on ? 'true' : 'false');
   msgsEl.querySelectorAll('.msg .text')
-    .forEach(el => el.setAttribute('contenteditable', on));
+    .forEach(el => el.setAttribute('contenteditable', on ? 'true' : 'false'));
   if(toggleBtn){
     toggleBtn.textContent = on ? 'צא ממצב עריכה' : 'מצב עריכה';
   }
@@ -481,40 +496,47 @@ function setEdit(on){
 }
 
 if(addBtn){
-  addBtn.addEventListener('click', () => {
-    addMsgDOM('הודעה חדשה - ערוך אותי');
+  addBtn.onclick = function(e){
+    e.preventDefault();
+    console.log('Add button clicked');
+    addMsgDOM('הודעה חדשה - לחץ כאן לעריכה');
     setEdit(true);
     saveMsgs();
-  });
+  };
 }
 
 if(toggleBtn){
-  toggleBtn.addEventListener('click', () => {
-    const isEdit = toggleBtn.textContent === 'מצב עריכה';
-    setEdit(isEdit);
-  });
+  toggleBtn.onclick = function(e){
+    e.preventDefault();
+    console.log('Toggle button clicked');
+    const isEditMode = toggleBtn.textContent === 'מצב עריכה';
+    setEdit(isEditMode);
+  };
 }
 
 if(clearBtn){
-  clearBtn.addEventListener('click', () => {
+  clearBtn.onclick = function(e){
+    e.preventDefault();
+    console.log('Clear button clicked');
     if(confirm('למחוק את כל ההודעות?')){
       msgsEl.innerHTML = '';
       saveMsgs();
     }
-  });
+  };
 }
 
-msgsEl.addEventListener('input', saveMsgs);
+msgsEl.addEventListener('input', function(){
+  console.log('Messages changed');
+  saveMsgs();
+});
 
 let titleSaveTimeout;
-['input','blur'].forEach(ev =>
-  titleEl.addEventListener(ev, () => {
-    clearTimeout(titleSaveTimeout);
-    titleSaveTimeout = setTimeout(() => {
-      localStorage.setItem(LS_KEYS.title, titleEl.textContent.trim());
-    }, 250);
-  })
-);
+titleEl.addEventListener('input', function(){
+  clearTimeout(titleSaveTimeout);
+  titleSaveTimeout = setTimeout(() => {
+    localStorage.setItem(LS_KEYS.title, titleEl.textContent.trim());
+  }, 250);
+});
 
 let carouselTimer = null;
 let carouselIndex = 0;
@@ -589,8 +611,8 @@ function startCarousel(){
     }catch(e){}
   } else {
     document.body.classList.add('display');
-    titleEl.removeAttribute('contenteditable');
-    startCarousel();
+    titleEl.setAttribute('contenteditable', 'false');
+    setTimeout(startCarousel, 100);
   }
 })();
 
@@ -632,7 +654,6 @@ async function loadShabbat(){
       ? new Date(nextHavdalah.t).toLocaleString('he-IL',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'})
       : '—';
   }catch(e){
-    console.error('Shabbat error:', e);
     candlesEl.textContent = 'לא זמין';
     havdalahEl.textContent = 'לא זמין';
   }
@@ -665,7 +686,6 @@ async function fetchRSSWithProxy(rssUrl){
     
     return headlines;
   } catch(e) {
-    console.error('RSS error:', rssUrl, e);
     return [];
   }
 }
