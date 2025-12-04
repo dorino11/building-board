@@ -169,17 +169,16 @@
       transform:scale(0.98);
     }
 
-.msg-board{
-  position:relative;
-  isolation:isolate;
-  border-radius:14px;
-  background:rgba(255,255,255,.03);
-  padding:12px;
-  overflow: hidden;   /* אין גלילה! */
-  min-height:200px;
-  flex:1;
-}
-
+    .msg-board{
+      position:relative;
+      isolation:isolate;
+      border-radius:14px;
+      background:rgba(255,255,255,.03);
+      padding:12px;
+      overflow:hidden; /* אין גלילה פנימית */
+      min-height:200px;
+      flex:1;
+    }
     .msg-board::before{
       content:"";
       position:absolute;
@@ -270,46 +269,12 @@
       display:none;
     }
 
-    /* ===== DISPLAY MODE – קרוסלה ===== */
+    /* ===== DISPLAY MODE ===== */
     body.display .msgs-toolbar{
-      display:none !important;
-    }
-    body.display .msg-board{
-      overflow:hidden;
+      display:none !important; /* אין כפתורים במצב לייב */
     }
     body.display .msgs{
-      display:none !important;
-    }
-    body.display .viewer{
-      display:block !important;
-    }
-
-    .viewer{
-      display:none;
-      position:relative;
-      height:100%;
-      z-index:2;
-    }
-
-    /* נראה בדיוק כמו .msg */
-    .viewer-item{
-      display:none;
-      background:rgba(0,0,0,.18);
-      padding:14px;
-      border-radius:12px;
-      box-shadow:0 6px 14px rgba(0,0,0,.18);
-      font-size:18px;
-      line-height:1.6;
-      text-align:right;
-      word-wrap:break-word;
-      opacity:0;
-      transform:translateY(8px);
-      transition:opacity .4s ease, transform .4s ease;
-    }
-    .viewer-item.active{
-      display:block;
-      opacity:1;
-      transform:translateY(0);
+      display:grid !important; /* מציג את כל ההודעות גם בלייב */
     }
 
     /* ===== NEWS BAR – גלילה רציפה ===== */
@@ -437,7 +402,6 @@
           </div>
           <div class="msg-board">
             <div class="msgs" id="msgs"></div>
-            <div class="viewer" id="viewer"></div>
           </div>
         </div>
 
@@ -546,7 +510,6 @@ const LS_KEYS = {
 
 const titleEl = document.getElementById('boardTitle');
 const msgsEl = document.getElementById('msgs');
-const viewer = document.getElementById('viewer');
 const addBtn = document.getElementById('addMsg');
 const toggleBtn = document.getElementById('toggleEdit');
 const clearBtn = document.getElementById('clearAll');
@@ -575,12 +538,10 @@ function saveMsgs(){
     .map(el => ({text: el.textContent.trim()}))
     .filter(m => m.text);
   localStorage.setItem(LS_KEYS.msgs, JSON.stringify(arr));
-  if(IS_DISPLAY){
-    buildCarousel();
-  }
 }
 
 function setEdit(on){
+  if(IS_DISPLAY) return; // לא עורך במצב תצוגה
   titleEl.setAttribute('contenteditable', on ? 'true' : 'false');
   msgsEl.querySelectorAll('.msg .text')
     .forEach(el => el.setAttribute('contenteditable', on ? 'true' : 'false'));
@@ -618,7 +579,17 @@ if(clearBtn){
 }
 
 msgsEl.addEventListener('input', function(){
+  if(IS_DISPLAY) return;
   saveMsgs();
+});
+
+let titleSaveTimeout;
+titleEl.addEventListener('input', function(){
+  if(IS_DISPLAY) return;
+  clearTimeout(titleSaveTimeout);
+  titleSaveTimeout = setTimeout(() => {
+    localStorage.setItem(LS_KEYS.title, titleEl.textContent.trim());
+  }, 250);
 });
 
 function renderAdImage(){
@@ -650,79 +621,19 @@ if(adUpload){
   });
 }
 
-let titleSaveTimeout;
-titleEl.addEventListener('input', function(){
-  clearTimeout(titleSaveTimeout);
-  titleSaveTimeout = setTimeout(() => {
-    localStorage.setItem(LS_KEYS.title, titleEl.textContent.trim());
-  }, 250);
-});
-
-let carouselTimer = null;
-let carouselIndex = 0;
-
-function buildCarousel(){
-  if(!IS_DISPLAY) return;
-
-  const items = [...msgsEl.querySelectorAll('.msg .text')]
-    .map(el => el.textContent.trim())
-    .filter(Boolean);
-
-  viewer.innerHTML = '';
-
-  if(items.length === 0){
-    const empty = document.createElement('div');
-    empty.className = 'viewer-item active';
-    empty.textContent = 'אין הודעות להצגה';
-    viewer.appendChild(empty);
-    return;
-  }
-
-  items.forEach(text => {
-    const el = document.createElement('div');
-    el.className = 'viewer-item';
-    el.textContent = text;
-    viewer.appendChild(el);
-  });
-
-  carouselIndex = 0;
-  activateCarouselItem(0);
-}
-
-function activateCarouselItem(i){
-  const all = viewer.querySelectorAll('.viewer-item');
-  all.forEach((el, idx) => {
-    el.classList.toggle('active', idx === i);
-  });
-}
-
-function startCarousel(){
-  if(!IS_DISPLAY) return;
-  buildCarousel();
-  if(carouselTimer) clearInterval(carouselTimer);
-  carouselTimer = setInterval(() => {
-    const len = viewer.querySelectorAll('.viewer-item').length;
-    if(len <= 1) return;
-    carouselIndex = (carouselIndex + 1) % len;
-    activateCarouselItem(carouselIndex);
-  }, 8000);
-}
-
 (async function initBoard(){
   const t = localStorage.getItem(LS_KEYS.title);
-  if (t) titleEl.textContent = t;
+  if(t) titleEl.textContent = t;
 
-  // תמיד נטען את ההודעות בדיוק מה־localStorage
   let arr;
-  try {
+  try{
     arr = JSON.parse(localStorage.getItem(LS_KEYS.msgs) || '[]');
-  } catch(e) {
+  }catch(e){
     arr = [];
   }
 
-  // לא מוסיפים הודעות ברירת מחדל – מה שיש בזיכרון זה מה שמוצג
   arr.forEach(m => {
-    if (m && m.text) addMsgDOM(m.text);
+    if(m && m.text) addMsgDOM(m.text);
   });
 
   const cityEl = document.getElementById('shabCity');
@@ -730,23 +641,19 @@ function startCarousel(){
 
   renderAdImage();
 
-  if (!IS_DISPLAY) {
-    // מצב עריכה
+  if(!IS_DISPLAY){
     try{
       const ed = JSON.parse(localStorage.getItem(LS_KEYS.edit) || '{}');
-      if (ed.edit) setEdit(true);
+      if(ed.edit) setEdit(true);
     }catch(e){}
-  } else {
-    // מצב תצוגה לייב
+  }else{
     document.body.classList.add('display');
     titleEl.setAttribute('contenteditable', 'false');
-    setTimeout(startCarousel, 100);
   }
 
   loadShabbat();
   loadNews();
 })();
-
 
 async function loadShabbat(){
   const candlesEl = document.getElementById('candles');
@@ -804,8 +711,7 @@ async function fetchRSSWithProxy(rssUrl){
     const items = xml.querySelectorAll('item');
 
     const headlines = [];
-    items.forEach((item, idx) => {
-      // נאסוף הרבה, המסנן ל-40 יהיה אחר כך
+    items.forEach((item) => {
       const title = item.querySelector('title')?.textContent;
       const link = item.querySelector('link')?.textContent;
       if(title && link) {
@@ -843,7 +749,7 @@ function renderNewsScroll(){
 
   requestAnimationFrame(() => {
     const fullWidth = content.scrollWidth / 2; // רוחב סט אחד
-    const speed = 90; // ככל שיותר גדול – יותר מהיר
+    const speed = 120; // ככל שיותר גדול – יותר מהיר
     const duration = fullWidth / speed;
     content.style.animation = `scroll-rtl ${duration}s linear infinite`;
   });
@@ -868,7 +774,7 @@ async function loadNews(){
     if(!h.t || seen.has(h.t)) continue;
     seen.add(h.t);
     dedup.push(h);
-    if(dedup.length >= 40) break; // 40 ייחודיות לכל היותר
+    if(dedup.length >= 40) break; // עד 40 ייחודיות
   }
 
   newsHeadlines = dedup.length > 0 ? dedup : [{t:'אין חדשות זמינות כרגע', u:'#'}];
