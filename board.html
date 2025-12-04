@@ -132,6 +132,7 @@
       cursor:pointer;
       font-weight:600;
       font-size:14px;
+      font-family:inherit;
     }
     .btn:hover{
       border-color:rgba(255,255,255,.3);
@@ -189,15 +190,20 @@
     /* ===== DISPLAY MODE – קרוסלה ===== */
     body.display .msgs-toolbar{display:none!important}
     body.display .msg-board{overflow:hidden}
-    body.display .msgs{display:none}
+    body.display .msgs{display:none!important}
 
     .viewer{
       position:absolute;
       inset:12px;
-      display:grid;
+      display:none;
       place-items:center;
       text-align:right;
     }
+    
+    body.display .viewer{
+      display:grid;
+    }
+    
     .viewer-item{
       max-width:90%;
       opacity:0;
@@ -446,6 +452,12 @@ function addMsgDOM(text){
   t.textContent = text || '';
   card.appendChild(t);
   msgsEl.appendChild(card);
+  
+  if(!IS_DISPLAY){
+    setTimeout(() => {
+      card.scrollIntoView({behavior:'smooth',block:'end'});
+    }, 50);
+  }
 }
 
 function saveMsgs(){
@@ -453,7 +465,9 @@ function saveMsgs(){
     .map(el => ({text: el.textContent.trim()}))
     .filter(m => m.text);
   localStorage.setItem(LS_KEYS.msgs, JSON.stringify(arr));
-  buildCarousel();
+  if(IS_DISPLAY){
+    buildCarousel();
+  }
 }
 
 function setEdit(on){
@@ -468,7 +482,7 @@ function setEdit(on){
 
 if(addBtn){
   addBtn.addEventListener('click', () => {
-    addMsgDOM('הודעה חדשה');
+    addMsgDOM('הודעה חדשה - ערוך אותי');
     setEdit(true);
     saveMsgs();
   });
@@ -556,27 +570,28 @@ function startCarousel(){
   const t = localStorage.getItem(LS_KEYS.title);
   if(t) titleEl.textContent = t;
 
-  const arr = JSON.parse(localStorage.getItem(LS_KEYS.msgs) || '[]');
+  let arr = JSON.parse(localStorage.getItem(LS_KEYS.msgs) || '[]');
   
   if(arr.length === 0){
-    arr.push({text: 'ברוכים הבאים ללוח המודעות הדיגיטלי'});
-    arr.push({text: 'להוספת הודעות הסר את ?display=1 מהכתובת'});
+    arr = [
+      {text: 'ברוכים הבאים ללוח המודעות הדיגיטלי'},
+      {text: 'להוספת הודעות הסר את ?display=1 מהכתובת'}
+    ];
     localStorage.setItem(LS_KEYS.msgs, JSON.stringify(arr));
   }
   
   arr.forEach(m => addMsgDOM(m.text));
 
-  try{
-    const ed = JSON.parse(localStorage.getItem(LS_KEYS.edit) || '{}');
-    if(ed.edit && !IS_DISPLAY) setEdit(true);
-  }catch(e){}
-
-  if(IS_DISPLAY){
+  if(!IS_DISPLAY){
+    try{
+      const ed = JSON.parse(localStorage.getItem(LS_KEYS.edit) || '{}');
+      if(ed.edit) setEdit(true);
+    }catch(e){}
+  } else {
     document.body.classList.add('display');
     titleEl.removeAttribute('contenteditable');
+    startCarousel();
   }
-  
-  startCarousel();
 })();
 
 const cityEl = document.getElementById('shabCity');
