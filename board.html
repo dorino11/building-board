@@ -118,7 +118,7 @@
       font-size:22px;
     }
 
-    /* פריסה: 75% הודעות + 25% תמונה */
+    /* פריסה: 75% הודעות + 25% תמונת סטורי */
     .board-layout{
       display:flex;
       gap:18px;
@@ -225,7 +225,7 @@
       to{opacity:1;transform:none}
     }
 
-    /* צד של תמונת סטורי */
+    /* צד – תמונת סטורי */
     .ad-frame{
       position:relative;
       width:100%;
@@ -302,7 +302,6 @@
       line-height:1.6;
       text-align:right;
       word-wrap:break-word;
-
       opacity:0;
       transform:translateY(8px);
       transition:opacity .4s ease, transform .4s ease;
@@ -358,7 +357,6 @@
       align-items:center;
       height:100%;
       white-space:nowrap;
-      animation:scroll-rtl 25s linear infinite; /* מהיר יותר */
       padding-inline-start:20px;
       will-change:transform;
     }
@@ -377,8 +375,8 @@
     }
 
     @keyframes scroll-rtl{
-      0%{transform:translateX(0)}
-      100%{transform:translateX(calc(-100% / 3))}
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
     }
 
     .news-track:hover .news-content{
@@ -564,7 +562,7 @@ function addMsgDOM(text){
   t.textContent = text || '';
   card.appendChild(t);
   msgsEl.appendChild(card);
-  
+
   if(!IS_DISPLAY){
     setTimeout(() => {
       card.scrollIntoView({behavior:'smooth',block:'end'});
@@ -665,13 +663,13 @@ let carouselIndex = 0;
 
 function buildCarousel(){
   if(!IS_DISPLAY) return;
-  
+
   const items = [...msgsEl.querySelectorAll('.msg .text')]
     .map(el => el.textContent.trim())
     .filter(Boolean);
-  
+
   viewer.innerHTML = '';
-  
+
   if(items.length === 0){
     const empty = document.createElement('div');
     empty.className = 'viewer-item active';
@@ -679,14 +677,14 @@ function buildCarousel(){
     viewer.appendChild(empty);
     return;
   }
-  
+
   items.forEach(text => {
     const el = document.createElement('div');
     el.className = 'viewer-item';
     el.textContent = text;
     viewer.appendChild(el);
   });
-  
+
   carouselIndex = 0;
   activateCarouselItem(0);
 }
@@ -715,7 +713,7 @@ function startCarousel(){
   if(t) titleEl.textContent = t;
 
   let arr = JSON.parse(localStorage.getItem(LS_KEYS.msgs) || '[]');
-  
+
   if(arr.length === 0){
     arr = [
       {text: 'ברוכים הבאים ללוח המודעות הדיגיטלי'},
@@ -723,7 +721,7 @@ function startCarousel(){
     ];
     localStorage.setItem(LS_KEYS.msgs, JSON.stringify(arr));
   }
-  
+
   arr.forEach(m => addMsgDOM(m.text));
 
   const cityEl = document.getElementById('shabCity');
@@ -796,21 +794,21 @@ async function fetchRSSWithProxy(rssUrl){
     const res = await fetch(proxyUrl);
     if(!res.ok) throw new Error('RSS fetch failed');
     const text = await res.text();
-    
+
     const parser = new DOMParser();
     const xml = parser.parseFromString(text, 'text/xml');
     const items = xml.querySelectorAll('item');
-    
+
     const headlines = [];
     items.forEach((item, idx) => {
-      if(idx >= 40) return; // עד 40 מכל מקור
+      // נאסוף הרבה, המסנן ל-40 יהיה אחר כך
       const title = item.querySelector('title')?.textContent;
       const link = item.querySelector('link')?.textContent;
       if(title && link) {
         headlines.push({t: title, u: link});
       }
     });
-    
+
     return headlines;
   } catch(e) {
     return [];
@@ -819,51 +817,59 @@ async function fetchRSSWithProxy(rssUrl){
 
 function renderNewsScroll(){
   const content = document.getElementById('newsContent');
+
   if(!newsHeadlines.length){
     content.innerHTML = '<span class="news-item">טוען חדשות...</span>';
     content.style.animation = 'none';
     return;
   }
 
-  const itemsHTML = newsHeadlines.map(h => 
-    `<span class="news-item">• <a href="${h.u}" target="_blank" rel="noopener">${h.t.replace(/[<>"']/g, '')}</a></span>`
+  // דואג שיהיו לפחות 40 כותרות בלופ
+  let filled = [];
+  while(filled.length < 40){
+    filled = filled.concat(newsHeadlines);
+  }
+
+  const itemsHTML = filled.map(h =>
+    `<span class="news-item">• <a href="${h.u}" target="_blank" rel="noopener">${h.t.replace(/[<>"']/g,'')}</a></span>`
   ).join('');
-  
-  // משכפל 3 פעמים – עד 120 פריטים ברצף
-  content.innerHTML = itemsHTML + itemsHTML + itemsHTML;
-  
-  setTimeout(() => {
-    const duration = 25; // מהירות קבועה – מהיר יותר
-    content.style.animationDuration = `${duration}s`;
-  }, 100);
+
+  // משכפלים פעמיים – כדי שה-50% באנימציה יעבוד אינסופית
+  content.innerHTML = itemsHTML + itemsHTML;
+
+  requestAnimationFrame(() => {
+    const fullWidth = content.scrollWidth / 2; // רוחב סט אחד
+    const speed = 90; // ככל שיותר גדול – יותר מהיר
+    const duration = fullWidth / speed;
+    content.style.animation = `scroll-rtl ${duration}s linear infinite`;
+  });
 }
 
 async function loadNews(){
   const sources = [
-    // חדשות N12 / mako
+    // N12 / mako – חדשות
     'https://rcs.mako.co.il/rss/31750a2610f26110VgnVCM1000005201000aRCRD.xml'
   ];
 
   let headlines = [];
 
-  for (const src of sources) {
+  for(const src of sources){
     const items = await fetchRSSWithProxy(src);
     headlines = headlines.concat(items);
   }
 
   const seen = new Set();
   const dedup = [];
-  for (const h of headlines) {
-    if (!h.t || seen.has(h.t)) continue;
+  for(const h of headlines){
+    if(!h.t || seen.has(h.t)) continue;
     seen.add(h.t);
     dedup.push(h);
-    if (dedup.length >= 40) break; // נשאר אותו לוגיקה של 40 כותרות
+    if(dedup.length >= 40) break; // 40 ייחודיות לכל היותר
   }
 
-  newsHeadlines = dedup.length > 0 ? dedup : [{ t:'אין חדשות זמינות כרגע', u:'#' }];
+  newsHeadlines = dedup.length > 0 ? dedup : [{t:'אין חדשות זמינות כרגע', u:'#'}];
   renderNewsScroll();
 }
-
 setInterval(loadNews,15*60*1000);
 </script>
 </body>
