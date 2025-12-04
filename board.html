@@ -169,17 +169,17 @@
       transform:scale(0.98);
     }
 
-    .msg-board{
-      position:relative;
-      isolation:isolate;
-      border-radius:14px;
-      background:rgba(255,255,255,.03);
-      padding:12px;
-      overflow-y:auto;
-      overflow-x:hidden;
-      min-height:200px;
-      flex:1;
-    }
+.msg-board{
+  position:relative;
+  isolation:isolate;
+  border-radius:14px;
+  background:rgba(255,255,255,.03);
+  padding:12px;
+  overflow: hidden;   /* אין גלילה! */
+  min-height:200px;
+  flex:1;
+}
+
     .msg-board::before{
       content:"";
       position:absolute;
