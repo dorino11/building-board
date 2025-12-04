@@ -264,7 +264,7 @@
       align-items:center;
       height:100%;
       white-space:nowrap;
-      animation:scroll-rtl 30s linear infinite;
+      animation:scroll-rtl 60s linear infinite;
       padding-inline-start:20px;
       will-change:transform;
     }
@@ -400,56 +400,40 @@ function updateClock(){
 }
 setInterval(updateClock,1000); updateClock();
 
-/* ===== מזג אוויר (IMS - השירות המטאורולוגי הישראלי) ===== */
+/* ===== מזג אוויר (Open-Meteo) ===== */
+function wxCodeToHe(code){
+  const map = {
+    0:'שמיים בהירים',1:'מעונן חלקית',2:'מעונן',3:'מעונן כבד',
+    45:'ערפל',48:'ערפל קפוא',
+    51:'טפטוף קל',53:'טפטוף',55:'טפטוף חזק',
+    61:'גשם קל',63:'גשם',65:'גשם חזק',
+    71:'שלג קל',73:'שלג',75:'שלג כבד',
+    80:'ממטרים קלים',81:'ממטרים',82:'ממטרים חזקים',
+    95:'סופות רעמים',96:'סופה עם ברד',99:'סופה עם ברד כבד'
+  };
+  return map[code] || 'מעודכן';
+}
 async function loadWeather(){
   try{
-    // קריאה ל-API של השירות המטאורולוגי
-    const res = await fetch('https://ims.gov.il/sites/default/files/ims_data/xml_files/TM46_latest.xml', {cache:'no-store'});
-    if(!res.ok) throw new Error('Failed to fetch');
-    
-    const text = await res.text();
-    const parser = new DOMParser();
-    const xml = parser.parseFromString(text, 'text/xml');
-    
-    // חיפוש התחנה הקרובה לרחובות - תחנת בית דגן
-    const stations = xml.querySelectorAll('Location');
-    let temp = null;
-    let desc = 'נתונים לא זמינים';
-    
-    for(const station of stations){
-      const name = station.querySelector('LocationMetaData LocationNameHeb')?.textContent;
-      if(name && name.includes('בית דגן')){
-        const tempEl = station.querySelector('BP_Temp');
-        if(tempEl) temp = Math.round(parseFloat(tempEl.textContent));
-        break;
-      }
-    }
-    
-    if(temp !== null){
-      document.getElementById('weatherInline').textContent = `מזג האוויר: ${temp}°C`;
-    } else {
-      throw new Error('No data');
-    }
+    const url =
+      `https://api.open-meteo.com/v1/forecast?latitude=${CONFIG.latitude}&longitude=${CONFIG.longitude}` +
+      `&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(CONFIG.tzid)}`;
+    const res = await fetch(url);
+    if(!res.ok) throw 0;
+    const d = await res.json();
+    const t   = Math.round(d.current.temperature_2m);
+    const w   = d.current.weather_code;
+    const max = Math.round(d.daily.temperature_2m_max[0]);
+    const min = Math.round(d.daily.temperature_2m_min[0]);
+    document.getElementById('weatherInline').textContent =
+      `מזג האוויר: ${t}°C · ${wxCodeToHe(w)} · היום: ${min}°–${max}°`;
   }catch(e){
-    // נסיון חלופי עם Open-Meteo
-    try{
-      const url =
-        `https://api.open-meteo.com/v1/forecast?latitude=${CONFIG.latitude}&longitude=${CONFIG.longitude}` +
-        `&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=${encodeURIComponent(CONFIG.tzid)}`;
-      const res = await fetch(url,{cache:'no-store'});
-      if(!res.ok) throw 0;
-      const d = await res.json();
-      const t   = Math.round(d.current.temperature_2m);
-      const w   = d.current.weather_code;
-      const max = Math.round(d.daily.temperature_2m_max[0]);
-      const min = Math.round(d.daily.temperature_2m_min[0]);
-      document.getElementById('weatherInline').textContent =
-        `מזג האוויר: ${t}°C · ${wxCodeToHe(w)} · היום: ${min}°–${max}°`;
-    }catch(e2){
-      document.getElementById('weatherInline').textContent = 'מזג האוויר לא זמין';
-    }
+    document.getElementById('weatherInline').textContent = 'מזג האוויר לא זמין';
   }
 }
+loadWeather();
+setInterval(loadWeather,30*60*1000);
+
 /* ===== הודעות לדיירים – localStorage + קרוסלה ===== */
 const LS_KEYS = {
   title:'board.title',
@@ -470,6 +454,14 @@ const clearBtn  = document.getElementById('clearAll');
   if(t) titleEl.textContent = t;
 
   const arr = JSON.parse(localStorage.getItem(LS_KEYS.msgs) || '[]');
+  
+  // אם אין הודעות, הוסף הודעות ברירת מחדל
+  if(arr.length === 0 && IS_DISPLAY){
+    arr.push({text: 'ברוכים הבאים ללוח המודעות הדיגיטלי'});
+    arr.push({text: 'להוספת הודעות, היכנס ללא ?display=1 בכתובת'});
+    localStorage.setItem(LS_KEYS.msgs, JSON.stringify(arr));
+  }
+  
   arr.forEach(m => addMsgDOM(m.text));
 
   try{
@@ -562,7 +554,7 @@ function buildCarousel(){
   if(items.length === 0){
     const empty = document.createElement('div');
     empty.className = 'viewer-item active';
-    empty.textContent = '';
+    empty.textContent = 'אין הודעות להצגה';
     viewer.appendChild(empty);
     return;
   }
@@ -609,7 +601,7 @@ async function loadShabbat(){
       m:String(CONFIG.havdalahOffsetDeg),
       b:String(CONFIG.candleOffsetMinutes)
     });
-    const res = await fetch('https://www.hebcal.com/shabbat?' + params.toString(),{cache:'no-store'});
+    const res = await fetch('https://www.hebcal.com/shabbat?' + params.toString());
     if(!res.ok) throw 0;
     const data = await res.json();
     const now = Date.now();
@@ -639,53 +631,69 @@ async function loadShabbat(){
 loadShabbat();
 setInterval(loadShabbat,6*60*60*1000);
 
-/* ===== חדשות – גלילה רציפה אינסופית ===== */
+/* ===== חדשות – גלילה רציפה עם AllOrigins proxy ===== */
 let newsHeadlines = [];
 
-async function fetchRSSJson(rssUrl){
-  const api = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(rssUrl);
-  const res = await fetch(api,{cache:'no-store'});
-  if(!res.ok) throw 0;
-  const data = await res.json();
-  return data.items || [];
+async function fetchRSSWithProxy(rssUrl){
+  try {
+    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(rssUrl);
+    const res = await fetch(proxyUrl);
+    if(!res.ok) throw new Error('Failed');
+    const text = await res.text();
+    
+    const parser = new DOMParser();
+    const xml = parser.parseFromString(text, 'text/xml');
+    const items = xml.querySelectorAll('item');
+    
+    const headlines = [];
+    items.forEach((item, idx) => {
+      if(idx >= 20) return;
+      const title = item.querySelector('title')?.textContent;
+      const link = item.querySelector('link')?.textContent;
+      if(title && link) {
+        headlines.push({t: title, u: link});
+      }
+    });
+    
+    return headlines;
+  } catch(e) {
+    console.error('RSS fetch error:', e);
+    return [];
+  }
 }
 
 function renderNewsScroll(){
   const content = document.getElementById('newsContent');
   if(!newsHeadlines.length){
-    content.innerHTML = '<span class="news-item">אין חדשות להצגה</span>';
+    content.innerHTML = '<span class="news-item">אין חדשות להצגה כרגע</span>';
     content.style.animation = 'none';
     return;
   }
 
-  // יצירת HTML לכל הכותרות - כפול פי 3 לגלילה חלקה
   const itemsHTML = newsHeadlines.map(h => 
     `<span class="news-item">• <a href="${h.u}" target="_blank" rel="noopener">${h.t.replace(/"/g,'&quot;')}</a></span>`
   ).join('');
   
-  // הכפלת התוכן פי 3 לגלילה רציפה אמיתית
   content.innerHTML = itemsHTML + itemsHTML + itemsHTML;
   
-  // חישוב משך האנימציה לפי רוחב התוכן
-  const contentWidth = content.scrollWidth / 3; // רוחב של העתק אחד
-  const duration = contentWidth / 80; // 50 פיקסלים לשנייה
-  content.style.animationDuration = `${duration}s`;
+  setTimeout(() => {
+    const contentWidth = content.scrollWidth / 3;
+    const duration = contentWidth / 50;
+    content.style.animationDuration = `${duration}s`;
+  }, 100);
 }
 
 async function loadNews(){
   const sources = [
     'https://www.ynet.co.il/Integration/StoryRss2.xml',
+    'https://rss.walla.co.il/feed/1?type=main'
   ];
 
   let headlines = [];
 
   for(const src of sources){
-    try{
-      const items = await fetchRSSJson(src);
-      headlines = headlines.concat(
-        items.slice(0,40).map(it => ({t:it.title,u:it.link}))
-      );
-    }catch(e){}
+    const items = await fetchRSSWithProxy(src);
+    headlines = headlines.concat(items);
   }
 
   const seen = new Set();
@@ -694,7 +702,7 @@ async function loadNews(){
     if(!h.t || seen.has(h.t)) continue;
     seen.add(h.t);
     dedup.push(h);
-    if(dedup.length >= 40) break;
+    if(dedup.length >= 30) break;
   }
 
   newsHeadlines = dedup;
